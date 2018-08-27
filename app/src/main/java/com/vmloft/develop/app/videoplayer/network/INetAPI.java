@@ -1,6 +1,6 @@
 package com.vmloft.develop.app.videoplayer.network;
 
-import com.vmloft.develop.app.videoplayer.bean.VideoBean;
+import com.vmloft.develop.app.videoplayer.bean.ResultBean;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
@@ -10,5 +10,5 @@ import retrofit2.http.GET;
  */
 public interface INetAPI {
     @GET("/")
-    public Call<VideoBean> getVideoList();
+    public Call<ResultBean> getVideoList();
 }

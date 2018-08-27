@@ -1,6 +1,7 @@
 package com.vmloft.develop.app.videoplayer.network;
 
 import com.vmloft.develop.app.videoplayer.R;
+import com.vmloft.develop.app.videoplayer.bean.ResultBean;
 import com.vmloft.develop.app.videoplayer.bean.VideoBean;
 import com.vmloft.develop.app.videoplayer.common.VCallback;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
@@ -118,21 +119,26 @@ public class NetHelper {
     }
 
 
+    /**
+     * 获取视频列表
+     *
+     * @param callback
+     */
     public void getVideoList(final VCallback callback) {
-        Call<VideoBean> call = netAPI.getVideoList();
-        call.enqueue(new Callback<VideoBean>() {
+        Call<ResultBean> call = netAPI.getVideoList();
+        call.enqueue(new Callback<ResultBean>() {
             @Override
-            public void onResponse(Call<VideoBean> call, Response<VideoBean> response) {
+            public void onResponse(Call<ResultBean> call, Response<ResultBean> response) {
                 if (response.isSuccessful()) {
-                    VideoBean videoBean = response.body();
-                    callback.onDone(videoBean);
+                    ResultBean resultBean = response.body();
+                    callback.onDone(resultBean);
                 } else {
                     callback.onError(response.code(), response.message());
                 }
             }
 
             @Override
-            public void onFailure(Call<VideoBean> call, Throwable t) {
+            public void onFailure(Call<ResultBean> call, Throwable t) {
                 parseThrowable(t, callback);
             }
         });
