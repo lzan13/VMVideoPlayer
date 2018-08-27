@@ -14,7 +14,6 @@ import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 import com.pili.pldroid.player.AVOptions;
 import com.pili.pldroid.player.PLOnBufferingUpdateListener;
@@ -23,8 +22,8 @@ import com.pili.pldroid.player.PLOnErrorListener;
 import com.pili.pldroid.player.PLOnInfoListener;
 import com.pili.pldroid.player.PLOnVideoSizeChangedListener;
 import com.pili.pldroid.player.widget.PLVideoTextureView;
-import com.vmloft.develop.app.videoplayer.Constant;
 import com.vmloft.develop.app.videoplayer.R;
+import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.library.tools.VMActivity;
 
 public class VideoPlayerFragment extends Fragment {
@@ -52,7 +51,7 @@ public class VideoPlayerFragment extends Fragment {
     public static VideoPlayerFragment newInstance(String videoPath) {
         VideoPlayerFragment fragment = new VideoPlayerFragment();
         Bundle args = new Bundle();
-        args.putString(Constant.KEY_VIDEO_DETAIL, videoPath);
+        args.putString(VConstant.KEY_VIDEO_DETAIL, videoPath);
         fragment.setArguments(args);
         return fragment;
     }
@@ -61,7 +60,7 @@ public class VideoPlayerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            videoPath = getArguments().getString(Constant.KEY_VIDEO_DETAIL);
+            videoPath = getArguments().getString(VConstant.KEY_VIDEO_DETAIL);
         }
     }
 

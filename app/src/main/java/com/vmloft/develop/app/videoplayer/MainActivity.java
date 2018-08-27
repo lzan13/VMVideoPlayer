@@ -11,6 +11,7 @@ import butterknife.OnClick;
 
 import com.vmloft.develop.app.videoplayer.bean.ResultBean;
 import com.vmloft.develop.app.videoplayer.common.VCallback;
+import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.app.videoplayer.network.NetHelper;
 import com.vmloft.develop.app.videoplayer.player.VideoPlayerActivity;
 import com.vmloft.develop.library.tools.VMActivity;
@@ -54,7 +55,7 @@ public class MainActivity extends VMActivity {
         switch (view.getId()) {
             case R.id.btn_play:
                 Intent intent = new Intent(activity, VideoPlayerActivity.class);
-                intent.putExtra(Constant.KEY_VIDEO_DETAIL, videoPath);
+                intent.putExtra(VConstant.KEY_VIDEO_DETAIL, videoPath);
                 startActivity(intent);
                 break;
         }

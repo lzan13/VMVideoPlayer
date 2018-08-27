@@ -41,16 +41,16 @@ public class NetHelper {
     NetHelper() {
         // 实例化 OkHttpClient，如果不自己创建 Retrofit 也会创建一个默认的
         client = new OkHttpClient.Builder().retryOnConnectionFailure(true)
-                //                .addInterceptor(new RequestInterceptor())
-                .connectTimeout(20, TimeUnit.SECONDS)
-                .writeTimeout(20, TimeUnit.SECONDS)
-                .readTimeout(20, TimeUnit.SECONDS)
-                .build();
+            //                .addInterceptor(new RequestInterceptor())
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .build();
         // 实例化 Retrofit
         retrofit = new Retrofit.Builder().client(client)
-                .baseUrl(VConstant.BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
+            .baseUrl(VConstant.BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build();
         // 创建 Retrofit 接口实例
         netAPI = retrofit.create(INetAPI.class);
     }
@@ -101,6 +101,7 @@ public class NetHelper {
      * 自定义拦截器，用户添加公共参数操作
      */
     private class RequestInterceptor implements Interceptor {
+
         @Override
         public okhttp3.Response intercept(Chain chain) throws IOException {
             Request request = chain.request();
@@ -118,14 +119,13 @@ public class NetHelper {
         }
     }
 
-
     /**
      * 获取视频列表
      *
      * @param callback
      */
     public void getVideoList(final VCallback callback) {
-        Call<ResultBean> call = netAPI.getVideoList();
+        Call<ResultBean> call = netAPI.getVideoList("video", 1);
         call.enqueue(new Callback<ResultBean>() {
             @Override
             public void onResponse(Call<ResultBean> call, Response<ResultBean> response) {
@@ -147,7 +147,7 @@ public class NetHelper {
     /**
      * 请求出现异常错误处理
      *
-     * @param e        异常
+     * @param e 异常
      * @param callback 回调
      */
     public void parseThrowable(Throwable e, VCallback callback) {
