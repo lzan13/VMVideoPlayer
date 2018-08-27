@@ -11,9 +11,11 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+
 import com.pili.pldroid.player.AVOptions;
 import com.pili.pldroid.player.PLOnBufferingUpdateListener;
 import com.pili.pldroid.player.PLOnCompletionListener;
@@ -30,10 +32,14 @@ public class VideoPlayerFragment extends Fragment {
     private static final String TAG = "VideoPlayerFragment";
     private VMActivity activity;
 
-    @BindView(R.id.view_video_player) PLVideoTextureView mVideoPlayView;
-    @BindView(R.id.layout_loading) LinearLayout mLoadingLayout;
-    @BindView(R.id.img_cover) ImageView mCoverView;
-    @BindView(R.id.text_status_info) TextView mStatusView;
+    @BindView(R.id.view_video_player)
+    PLVideoTextureView mVideoPlayView;
+    @BindView(R.id.layout_loading)
+    LinearLayout mLoadingLayout;
+    @BindView(R.id.img_cover)
+    ImageView mCoverView;
+    @BindView(R.id.text_status_info)
+    TextView mStatusView;
 
     // 视频详情实体类
     private VideoController mVideoController;
@@ -62,20 +68,7 @@ public class VideoPlayerFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_video_player, container, false);
-        ButterKnife.bind(this, view);
         return view;
-    }
-
-    /**
-     * 判断当前 Fragment 是否显示做数据加载判断，此方法只能用在和 ViewPager 一起使用
-     */
-    @Override
-    public void setUserVisibleHint(boolean isVisibleToUser) {
-        super.setUserVisibleHint(isVisibleToUser);
-        // 当前 Fragment 显示时加载数据
-        if (isVisibleToUser) {
-        } else {
-        }
     }
 
     @Override
@@ -86,6 +79,8 @@ public class VideoPlayerFragment extends Fragment {
     }
 
     protected void init() {
+        ButterKnife.bind(this, getView());
+
         mIsLiveStreaming = false;
 
         mVideoPlayView.setBufferingIndicator(mLoadingLayout);
@@ -127,12 +122,12 @@ public class VideoPlayerFragment extends Fragment {
         // mVideoPlayView.setMirror(true);
 
         // You can also use a custom `MediaController` widget
-        //VideoController mediaController = new VideoController(activity, !mIsLiveStreaming, mIsLiveStreaming);
-        //mediaController.setOnClickSpeedAdjustListener(mOnClickSpeedAdjustListener);
-        //mVideoPlayView.setMediaController(mediaController);
+        //        VideoController mediaController = new VideoController(activity, !mIsLiveStreaming, mIsLiveStreaming);
+        //        mediaController.setOnClickSpeedAdjustListener(mOnClickSpeedAdjustListener);
+        //        mVideoPlayView.setMediaController(mediaController);
 
-        CustomVideoController mediaController = new CustomVideoController(activity);
-        mVideoPlayView.setMediaController(mediaController);
+        CustomVideoController videoController = new CustomVideoController(activity);
+        mVideoPlayView.setMediaController(videoController);
 
         mVideoPlayView.setOnInfoListener(mOnInfoListener);
         mVideoPlayView.setOnVideoSizeChangedListener(mOnVideoSizeChangedListener);
@@ -147,17 +142,14 @@ public class VideoPlayerFragment extends Fragment {
         mVideoPlayView.setVideoPath(videoPath);
     }
 
-    @OnClick({ R.id.btn_fullscreen, R.id.btn_scale_mode })
-    public void onClick(View view) {
-        switch (view.getId()) {
-        case R.id.btn_fullscreen:
-            onFullscreen(view);
-            break;
-        case R.id.btn_scale_mode:
-            onScaleMode(view);
-            break;
-        }
-    }
+    //    @OnClick({R.id.img_fullscreen})
+    //    public void onClick(View view) {
+    //        switch (view.getId()) {
+    //            case R.id.img_fullscreen:
+    //                onFullscreen(view);
+    //                break;
+    //        }
+    //    }
 
     @Override
     public void onPause() {
@@ -186,23 +178,23 @@ public class VideoPlayerFragment extends Fragment {
         mDisplayAspectRatio = (mDisplayAspectRatio + 1) % 5;
         mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
         switch (mVideoPlayView.getDisplayAspectRatio()) {
-        case PLVideoTextureView.ASPECT_RATIO_ORIGIN:
-            showToastTips(activity, "Origin mode");
-            break;
-        case PLVideoTextureView.ASPECT_RATIO_FIT_PARENT:
-            showToastTips(activity, "Fit parent !");
-            break;
-        case PLVideoTextureView.ASPECT_RATIO_PAVED_PARENT:
-            showToastTips(activity, "Paved parent !");
-            break;
-        case PLVideoTextureView.ASPECT_RATIO_16_9:
-            showToastTips(activity, "16 : 9 !");
-            break;
-        case PLVideoTextureView.ASPECT_RATIO_4_3:
-            showToastTips(activity, "4 : 3 !");
-            break;
-        default:
-            break;
+            case PLVideoTextureView.ASPECT_RATIO_ORIGIN:
+                showToastTips(activity, "Origin mode");
+                break;
+            case PLVideoTextureView.ASPECT_RATIO_FIT_PARENT:
+                showToastTips(activity, "Fit parent !");
+                break;
+            case PLVideoTextureView.ASPECT_RATIO_PAVED_PARENT:
+                showToastTips(activity, "Paved parent !");
+                break;
+            case PLVideoTextureView.ASPECT_RATIO_16_9:
+                showToastTips(activity, "16 : 9 !");
+                break;
+            case PLVideoTextureView.ASPECT_RATIO_4_3:
+                showToastTips(activity, "4 : 3 !");
+                break;
+            default:
+                break;
         }
     }
 
@@ -211,43 +203,43 @@ public class VideoPlayerFragment extends Fragment {
         public void onInfo(int what, int extra) {
             Log.i(TAG, "OnInfo, what = " + what + ", extra = " + extra);
             switch (what) {
-            case PLOnInfoListener.MEDIA_INFO_BUFFERING_START:
-                break;
-            case PLOnInfoListener.MEDIA_INFO_BUFFERING_END:
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_RENDERING_START:
-                showToastTips(activity, "First video render time: " + extra + "ms");
-                break;
-            case PLOnInfoListener.MEDIA_INFO_AUDIO_RENDERING_START:
-                Log.i(TAG, "First audio render time: " + extra + "ms");
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_FRAME_RENDERING:
-                Log.i(TAG, "video frame rendering, ts = " + extra);
-                break;
-            case PLOnInfoListener.MEDIA_INFO_AUDIO_FRAME_RENDERING:
-                Log.i(TAG, "audio frame rendering, ts = " + extra);
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_GOP_TIME:
-                Log.i(TAG, "Gop Time: " + extra);
-                break;
-            case PLOnInfoListener.MEDIA_INFO_SWITCHING_SW_DECODE:
-                Log.i(TAG, "Hardware decoding failure, switching software decoding!");
-                break;
-            case PLOnInfoListener.MEDIA_INFO_METADATA:
-                Log.i(TAG, mVideoPlayView.getMetadata().toString());
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_BITRATE:
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_FPS:
-                updateStatInfo();
-                break;
-            case PLOnInfoListener.MEDIA_INFO_CONNECTED:
-                Log.i(TAG, "Connected !");
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
-                Log.i(TAG, "Rotation changed: " + extra);
-                break;
-            default:
-                break;
+                case PLOnInfoListener.MEDIA_INFO_BUFFERING_START:
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_BUFFERING_END:
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_VIDEO_RENDERING_START:
+                    showToastTips(activity, "First video render time: " + extra + "ms");
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_AUDIO_RENDERING_START:
+                    Log.i(TAG, "First audio render time: " + extra + "ms");
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_VIDEO_FRAME_RENDERING:
+                    Log.i(TAG, "video frame rendering, ts = " + extra);
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_AUDIO_FRAME_RENDERING:
+                    Log.i(TAG, "audio frame rendering, ts = " + extra);
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_VIDEO_GOP_TIME:
+                    Log.i(TAG, "Gop Time: " + extra);
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_SWITCHING_SW_DECODE:
+                    Log.i(TAG, "Hardware decoding failure, switching software decoding!");
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_METADATA:
+                    Log.i(TAG, mVideoPlayView.getMetadata().toString());
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_VIDEO_BITRATE:
+                case PLOnInfoListener.MEDIA_INFO_VIDEO_FPS:
+                    updateStatInfo();
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_CONNECTED:
+                    Log.i(TAG, "Connected !");
+                    break;
+                case PLOnInfoListener.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
+                    Log.i(TAG, "Rotation changed: " + extra);
+                    break;
+                default:
+                    break;
             }
         }
     };
@@ -257,21 +249,21 @@ public class VideoPlayerFragment extends Fragment {
         public boolean onError(int errorCode) {
             Log.e(TAG, "Error happened, errorCode = " + errorCode);
             switch (errorCode) {
-            case PLOnErrorListener.ERROR_CODE_IO_ERROR:
-                /**
-                 * SDK will do reconnecting automatically
-                 */
-                showToastTips(activity, "IO Error !");
-                return false;
-            case PLOnErrorListener.ERROR_CODE_OPEN_FAILED:
-                showToastTips(activity, "failed to open player !");
-                break;
-            case PLOnErrorListener.ERROR_CODE_SEEK_FAILED:
-                showToastTips(activity, "failed to seek !");
-                break;
-            default:
-                showToastTips(activity, "unknown error !");
-                break;
+                case PLOnErrorListener.ERROR_CODE_IO_ERROR:
+                    /**
+                     * SDK will do reconnecting automatically
+                     */
+                    showToastTips(activity, "IO Error !");
+                    return false;
+                case PLOnErrorListener.ERROR_CODE_OPEN_FAILED:
+                    showToastTips(activity, "failed to open player !");
+                    break;
+                case PLOnErrorListener.ERROR_CODE_SEEK_FAILED:
+                    showToastTips(activity, "failed to seek !");
+                    break;
+                default:
+                    showToastTips(activity, "unknown error !");
+                    break;
             }
             return true;
         }

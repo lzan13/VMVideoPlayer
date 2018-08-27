@@ -2,22 +2,29 @@ package com.vmloft.develop.app.videoplayer.player;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Rect;
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import com.pili.pldroid.player.IMediaController;
 import com.vmloft.develop.app.videoplayer.R;
 import com.vmloft.develop.app.videoplayer.widget.PlayProgressBar;
+import com.vmloft.develop.library.tools.utils.VMLog;
+
 import java.util.Locale;
 
 /**
@@ -25,17 +32,22 @@ import java.util.Locale;
  * 自定义视频播放控制器
  */
 public class CustomVideoController extends FrameLayout implements IMediaController {
-
     private static final int CTRL_HIDE = 1;
     private static final int CTRL_SHOW = 2;
     private static final int SEEK_BAR_DELAY = 200;
 
     private Context mContext;
 
+    private MediaPlayerControl mPlayerControl;
+
+    // 控制器界面，这里用 PopupWindow 加载显示
+    private PopupWindow mControllerWindow;
+    private int mAnimStyle;
+
     // 音频管理类
     private AudioManager mAudioManager;
     // 视频播放控制接口
-    private MediaPlayerControl mPlayerControl;
+    private MediaPlayerControl mControl;
     private Runnable mSeekBarRunnable;
 
     // UI 控件
@@ -46,7 +58,7 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
     private ImageView mFullscreenView;
     private TextView mPlayTimeView;
     private TextView mDurationTimeView;
-    private PlayProgressBar mProgressBar;
+    //    private PlayProgressBar mProgressBar;
     private SeekBar mSeekBar;
 
     // 控制界面是否显示
@@ -59,55 +71,44 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
     // 设置总的持续时间
     private long mDuration;
 
-    public CustomVideoController(@NonNull Context context) {
+    public CustomVideoController(Context context) {
         this(context, null);
     }
 
-    public CustomVideoController(@NonNull Context context, @Nullable AttributeSet attrs) {
-        this(context, attrs, 0);
+    public CustomVideoController(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        init(context);
     }
 
-    public CustomVideoController(@NonNull Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
-        super(context, attrs, defStyleAttr);
+    private void init(Context context) {
         mContext = context.getApplicationContext();
-        init();
+        initControllerUI();
     }
+
 
     /**
-     * 初始化
+     * 初始化控制器 UI
      */
-    private void init() {
-        LayoutInflater.from(mContext).inflate(R.layout.widget_video_controller, this);
+    private void initControllerUI() {
+        // 获取控制器 UI 布局
+        mRootView = LayoutInflater.from(mContext).inflate(R.layout.widget_video_controller, null);
 
-        mRootView = this;
+        // 初始化控制器
+        mControllerWindow = new PopupWindow(mContext);
+        mControllerWindow.setContentView(mRootView);
+        mControllerWindow.setWidth(FrameLayout.LayoutParams.MATCH_PARENT);
+        mControllerWindow.setHeight(FrameLayout.LayoutParams.WRAP_CONTENT);
+        mControllerWindow.setFocusable(false);
+        mControllerWindow.setBackgroundDrawable(null);
+        mControllerWindow.setOutsideTouchable(true);
 
-        mLockView = findViewById(R.id.img_lock);
-        mPlayView = findViewById(R.id.img_play);
-        mFullscreenView = findViewById(R.id.img_fullscreen);
-        mPlayTimeView = findViewById(R.id.text_play_time);
-        mDurationTimeView = findViewById(R.id.text_duration_time);
-        // mProgressBar = findViewById(R.id.);
-        mSeekBar = findViewById(R.id.seek_bar_play);
-
-        mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-        mSeekBar.setOnSeekBarChangeListener(mSeekListener);
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        show(mDefaultTimeout);
-        return true;
-    }
-
-    @Override
-    public boolean onTrackballEvent(MotionEvent ev) {
-        show(mDefaultTimeout);
-        return false;
+        // 设置控制器显示隐藏动画
+        mAnimStyle = android.R.style.Animation;
     }
 
     @Override
     public void setMediaPlayer(MediaPlayerControl mediaPlayerControl) {
-        mPlayerControl = mediaPlayerControl;
+        mControl = mediaPlayerControl;
     }
 
     @Override
@@ -117,14 +118,34 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
 
     @Override
     public void show(int timeout) {
-        if (!isShowing) {
-            setVisibility(View.VISIBLE);
-            isShowing = true;
+        VMLog.i("开始显示控制界面");
+        if (isShowing) {
+            VMLog.e("控制界面已经显示");
+            return;
         }
-        updatePlayStatus();
-        mHandler.sendEmptyMessage(CTRL_SHOW);
+        if (mAnchorView != null && mAnchorView.getWindowToken() != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                mAnchorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+            }
+        }
 
+        int[] location = new int[2];
+
+        if (mAnchorView != null) {
+            mAnchorView.getLocationOnScreen(location);
+            Rect anchorRect = new Rect(location[0], location[1], location[0] + mAnchorView.getWidth(), location[1] + mAnchorView.getHeight());
+
+            mControllerWindow.setAnimationStyle(mAnimStyle);
+            mControllerWindow.showAtLocation(mAnchorView, Gravity.BOTTOM, anchorRect.left, 0);
+        } else {
+            Rect anchorRect = new Rect(location[0], location[1], location[0] + mRootView.getWidth(), location[1] + mRootView.getHeight());
+
+            mControllerWindow.setAnimationStyle(mAnimStyle);
+            mControllerWindow.showAtLocation(mRootView, Gravity.BOTTOM, anchorRect.left, 0);
+        }
+        isShowing = true;
         if (timeout != 0) {
+            VMLog.i("发送隐藏控制界面的 handler 消息");
             mHandler.removeMessages(CTRL_HIDE);
             mHandler.sendMessageDelayed(mHandler.obtainMessage(CTRL_HIDE), timeout);
         }
@@ -132,11 +153,34 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
 
     @Override
     public void hide() {
+        VMLog.i("开始隐藏控制界面");
         if (isShowing) {
-            setVisibility(View.GONE);
-            mHandler.removeMessages(CTRL_SHOW);
+            VMLog.i("控制界面并未显示");
+            if (mAnchorView != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                    mAnchorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                }
+            }
+            if (mControllerWindow.isShowing()) {
+                mHandler.removeMessages(CTRL_SHOW);
+                mControllerWindow.dismiss();
+            }
             isShowing = false;
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        VMLog.i("触摸显示控制界面-1-");
+        show(mDefaultTimeout);
+        return true;
+    }
+
+    @Override
+    public boolean onTrackballEvent(MotionEvent ev) {
+        VMLog.i("触摸显示控制界面-2-");
+        show(mDefaultTimeout);
+        return false;
     }
 
     @Override
@@ -145,134 +189,28 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
     }
 
     @Override
+    public void setEnabled(boolean b) {
+
+    }
+
+    @Override
     public void setAnchorView(View view) {
-
+        mAnchorView = view;
     }
 
-    private void updatePlayStatus() {
 
-    }
-
-    /**
-     * 设置播放进度
-     */
-    private long setProgress() {
-        if (mPlayerControl == null || isDragging) {
-            return 0;
-        }
-
-        long position = mPlayerControl.getCurrentPosition();
-        long duration = mPlayerControl.getDuration();
-        if (mSeekBar != null) {
-            if (duration > 0) {
-                long pos = 1000L * position / duration;
-                mSeekBar.setProgress((int) pos);
-            }
-            int percent = mPlayerControl.getBufferPercentage();
-            mSeekBar.setSecondaryProgress(percent * 10);
-        }
-
-        mDuration = duration;
-
-        if (mDurationTimeView != null) {
-            mDurationTimeView.setText(generateTime(mDuration));
-        }
-        if (mPlayTimeView != null) {
-            mPlayTimeView.setText(generateTime(position));
-        }
-        return position;
-    }
-
-    /**
-     * 根据播放进度计算时间
-     *
-     * @param position 当前播放位置
-     */
-    private static String generateTime(long position) {
-        int totalSeconds = (int) (position / 1000);
-        int seconds = totalSeconds % 60;
-        int minutes = (totalSeconds / 60) % 60;
-        int hours = totalSeconds / 3600;
-        if (hours > 0) {
-            return String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds).toString();
-        } else {
-            return String.format(Locale.US, "%02d:%02d", minutes, seconds).toString();
-        }
-    }
-
-    /**
-     * 拖动条监听
-     */
-    private SeekBar.OnSeekBarChangeListener mSeekListener = new SeekBar.OnSeekBarChangeListener() {
-
-        public void onStartTrackingTouch(SeekBar bar) {
-            isDragging = true;
-            show(3600000);
-            mHandler.removeMessages(CTRL_SHOW);
-            if (isInstantSeeking) {
-                mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, true);
-            }
-        }
-
-        public void onProgressChanged(SeekBar bar, int progress, boolean fromuser) {
-            if (!fromuser) {
-                return;
-            }
-            final long newPosition = (mDuration * progress) / 1000;
-            String time = generateTime(newPosition);
-            if (isInstantSeeking) {
-                mHandler.removeCallbacks(mSeekBarRunnable);
-                mSeekBarRunnable = new Runnable() {
-                    @Override
-                    public void run() {
-                        mPlayerControl.seekTo(newPosition);
-                    }
-                };
-                mHandler.postDelayed(mSeekBarRunnable, SEEK_BAR_DELAY);
-            }
-            if (mPlayTimeView != null) {
-                mPlayTimeView.setText(time);
-            }
-        }
-
-        public void onStopTrackingTouch(SeekBar bar) {
-            if (!isInstantSeeking) {
-                mPlayerControl.seekTo(mDuration * bar.getProgress() / 1000);
-            }
-
-            show(mDefaultTimeout);
-            mHandler.removeMessages(CTRL_SHOW);
-            mAudioManager.setStreamMute(AudioManager.STREAM_MUSIC, false);
-            isDragging = false;
-            mHandler.sendEmptyMessageDelayed(CTRL_SHOW, 1000);
-        }
-    };
-
-    /**
-     * 处理控制界面的显示和隐藏
-     */
-    @SuppressLint("HandlerLeak") private Handler mHandler = new Handler() {
+    @SuppressLint("HandlerLeak")
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             long pos;
             switch (msg.what) {
-            case CTRL_HIDE:
-                hide();
-                break;
-            case CTRL_SHOW:
-                if (!mPlayerControl.isPlaying()) {
-                    return;
-                }
-                pos = setProgress();
-                if (pos == -1) {
-                    return;
-                }
-                if (!isDragging && isShowing) {
-                    msg = obtainMessage(CTRL_SHOW);
-                    sendMessageDelayed(msg, 1000 - (pos % 1000));
-                    updatePlayStatus();
-                }
-                break;
+                case CTRL_HIDE:
+                    hide();
+                    break;
+                case CTRL_SHOW:
+                    show();
+                    break;
             }
         }
     };

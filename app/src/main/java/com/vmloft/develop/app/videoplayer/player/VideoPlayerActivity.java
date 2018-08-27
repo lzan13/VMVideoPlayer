@@ -2,6 +2,7 @@ package com.vmloft.develop.app.videoplayer.player;
 
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
+
 import com.vmloft.develop.app.videoplayer.Constant;
 import com.vmloft.develop.app.videoplayer.R;
 import com.vmloft.develop.library.tools.VMActivity;
@@ -29,7 +30,6 @@ public class VideoPlayerActivity extends VMActivity {
             videoPlayerFragment = null;
         }
         videoPlayerFragment = VideoPlayerFragment.newInstance(videoPath);
-        transaction.replace(R.id.fragment_video_container, videoPlayerFragment)
-            .commitAllowingStateLoss();
+        transaction.replace(R.id.fragment_video_container, videoPlayerFragment).commitAllowingStateLoss();
     }
 }

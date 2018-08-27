@@ -1,31 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/vm_black"
-    >
+    android:background="@color/vm_green_38">
 
     <com.pili.pldroid.player.widget.PLVideoTextureView
         android:id="@+id/view_video_player"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="@dimen/vm_dimen_220"
         android:layout_gravity="center"
+        android:background="@color/vm_orange_12"
         android:keepScreenOn="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageView
         android:id="@+id/img_cover"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="center"
+        android:layout_height="wrap_content"
         android:src="@drawable/img_default_cover"
-        />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/layout_loading"
@@ -36,22 +36,19 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        >
+        app:layout_constraintTop_toTopOf="parent">
 
         <ProgressBar
             android:layout_width="@dimen/vm_dimen_36"
             android:layout_height="@dimen/vm_dimen_36"
-            android:layout_margin="@dimen/vm_margin_normal"
-            />
+            android:layout_margin="@dimen/vm_margin_normal" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="正在加载..."
             android:textColor="@android:color/white"
-            android:textSize="@dimen/vm_size_subhead"
-            />
+            android:textSize="@dimen/vm_size_subhead" />
     </LinearLayout>
 
     <TextView
@@ -63,7 +60,5 @@
         android:textColor="@color/vm_green_87"
         android:textSize="@dimen/vm_size_caption"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        />
-
+        app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>
