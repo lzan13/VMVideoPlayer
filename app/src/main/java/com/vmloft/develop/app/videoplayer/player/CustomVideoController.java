@@ -2,17 +2,11 @@ package com.vmloft.develop.app.videoplayer.player;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Rect;
 import android.media.AudioManager;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.util.AttributeSet;
-import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -22,10 +16,7 @@ import android.widget.TextView;
 
 import com.pili.pldroid.player.IMediaController;
 import com.vmloft.develop.app.videoplayer.R;
-import com.vmloft.develop.app.videoplayer.widget.PlayProgressBar;
 import com.vmloft.develop.library.tools.utils.VMLog;
-
-import java.util.Locale;
 
 /**
  * Create by lzan13 on 2018/8/26
@@ -91,19 +82,7 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
      */
     private void initControllerUI() {
         // 获取控制器 UI 布局
-        mRootView = LayoutInflater.from(mContext).inflate(R.layout.widget_video_controller, null);
-
-        // 初始化控制器
-        mControllerWindow = new PopupWindow(mContext);
-        mControllerWindow.setContentView(mRootView);
-        mControllerWindow.setWidth(FrameLayout.LayoutParams.MATCH_PARENT);
-        mControllerWindow.setHeight(FrameLayout.LayoutParams.WRAP_CONTENT);
-        mControllerWindow.setFocusable(false);
-        mControllerWindow.setBackgroundDrawable(null);
-        mControllerWindow.setOutsideTouchable(true);
-
-        // 设置控制器显示隐藏动画
-        mAnimStyle = android.R.style.Animation;
+        mRootView = LayoutInflater.from(mContext).inflate(R.layout.widget_video_controller, this);
     }
 
     @Override
@@ -123,26 +102,7 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
             VMLog.e("控制界面已经显示");
             return;
         }
-        if (mAnchorView != null && mAnchorView.getWindowToken() != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                mAnchorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
-            }
-        }
-
-        int[] location = new int[2];
-
-        if (mAnchorView != null) {
-            mAnchorView.getLocationOnScreen(location);
-            Rect anchorRect = new Rect(location[0], location[1], location[0] + mAnchorView.getWidth(), location[1] + mAnchorView.getHeight());
-
-            mControllerWindow.setAnimationStyle(mAnimStyle);
-            mControllerWindow.showAtLocation(mAnchorView, Gravity.BOTTOM, anchorRect.left, 0);
-        } else {
-            Rect anchorRect = new Rect(location[0], location[1], location[0] + mRootView.getWidth(), location[1] + mRootView.getHeight());
-
-            mControllerWindow.setAnimationStyle(mAnimStyle);
-            mControllerWindow.showAtLocation(mRootView, Gravity.BOTTOM, anchorRect.left, 0);
-        }
+        mRootView.setVisibility(VISIBLE);
         isShowing = true;
         if (timeout != 0) {
             VMLog.i("发送隐藏控制界面的 handler 消息");
@@ -154,33 +114,12 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
     @Override
     public void hide() {
         VMLog.i("开始隐藏控制界面");
-        if (isShowing) {
-            VMLog.i("控制界面并未显示");
-            if (mAnchorView != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-                    mAnchorView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
-                }
-            }
-            if (mControllerWindow.isShowing()) {
-                mHandler.removeMessages(CTRL_SHOW);
-                mControllerWindow.dismiss();
-            }
+        if (isShowing && mRootView.isShown()) {
+            VMLog.i("控制界面正在显示");
+            mHandler.removeMessages(CTRL_SHOW);
+            mRootView.setVisibility(GONE);
             isShowing = false;
         }
-    }
-
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        VMLog.i("触摸显示控制界面-1-");
-        show(mDefaultTimeout);
-        return true;
-    }
-
-    @Override
-    public boolean onTrackballEvent(MotionEvent ev) {
-        VMLog.i("触摸显示控制界面-2-");
-        show(mDefaultTimeout);
-        return false;
     }
 
     @Override

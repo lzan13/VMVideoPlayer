@@ -16,7 +16,7 @@ import com.vmloft.develop.library.tools.utils.VMDimen;
 
 public class PlayProgressBar extends View {
 
-    private static final String TAG = "CustomSeekBar";
+    private static final String TAG = "PlayProgressBar";
     public static final int MAX = 10000;
 
     private float barHeight;

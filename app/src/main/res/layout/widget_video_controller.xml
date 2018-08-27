@@ -4,7 +4,7 @@
     android:id="@+id/layout_controller_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/vm_red_38">
+    android:background="@color/vm_red_12">
 
 
     <!--锁定按钮-->
@@ -48,7 +48,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/vm_margin_normal"
-        android:text="@string/app_name"
+        android:text="00:00"
         android:textColor="@color/vm_white"
         app:layout_constraintBottom_toBottomOf="@+id/img_fullscreen"
         app:layout_constraintStart_toStartOf="parent"
@@ -61,7 +61,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/vm_margin_normal"
-        android:text="@string/app_name"
+        android:text="00:00"
         android:textColor="@color/vm_white"
         app:layout_constraintBottom_toBottomOf="@+id/img_fullscreen"
         app:layout_constraintEnd_toStartOf="@+id/img_fullscreen"
@@ -70,19 +70,19 @@
     <!--播放进度拖动条-->
     <SeekBar
         android:id="@+id/seek_bar_play"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="@+id/text_play_time"
-        app:layout_constraintEnd_toEndOf="@+id/text_duration_time"
-        app:layout_constraintStart_toStartOf="@+id/text_play_time"
+        app:layout_constraintEnd_toStartOf="@+id/text_duration_time"
+        app:layout_constraintStart_toEndOf="@+id/text_play_time"
         app:layout_constraintTop_toTopOf="@+id/text_play_time" />
 
     <!--播放进度拖动条-->
     <!--<com.vmloft.develop.app.videoplayer.widget.PlayProgressBar-->
-        <!--android:id="@+id/progress_bar_play"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--app:layout_constraintBottom_toBottomOf="parent"-->
-        <!--app:layout_constraintEnd_toEndOf="parent"-->
-        <!--app:layout_constraintStart_toStartOf="parent" />-->
+    <!--android:id="@+id/progress_bar_play"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--app:layout_constraintBottom_toBottomOf="parent"-->
+    <!--app:layout_constraintEnd_toEndOf="parent"-->
+    <!--app:layout_constraintStart_toStartOf="parent" />-->
 </android.support.constraint.ConstraintLayout>

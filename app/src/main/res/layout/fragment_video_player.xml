@@ -2,14 +2,13 @@
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:background="@color/vm_green_38">
 
     <com.pili.pldroid.player.widget.PLVideoTextureView
         android:id="@+id/view_video_player"
         android:layout_width="match_parent"
-        android:layout_height="@dimen/vm_dimen_220"
-        android:layout_gravity="center"
+        android:layout_height="wrap_content"
         android:background="@color/vm_orange_12"
         android:keepScreenOn="true"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -59,6 +58,17 @@
         android:text="@string/app_name"
         android:textColor="@color/vm_green_87"
         android:textSize="@dimen/vm_size_caption"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!--播放控制器，包括控制器 UI 和控制逻辑-->
+    <com.vmloft.develop.app.videoplayer.player.CustomVideoController
+        android:id="@+id/custom_video_controller"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:background="@color/vm_orange_54"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </android.support.constraint.ConstraintLayout>

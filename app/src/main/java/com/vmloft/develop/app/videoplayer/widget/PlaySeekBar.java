@@ -19,10 +19,9 @@ import com.vmloft.develop.library.tools.utils.VMDimen;
 /**
  * Created by chalilayang on 2016/12/13.
  */
-
 public class PlaySeekBar extends View {
 
-    private static final String TAG = "CustomSeekBar";
+    private static final String TAG = "PlaySeekBar";
     public static final int MAX = 10000;
 
     private float mDownX;

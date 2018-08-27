@@ -41,8 +41,8 @@ public class VideoPlayerFragment extends Fragment {
     @BindView(R.id.text_status_info)
     TextView mStatusView;
 
-    // 视频详情实体类
-    private VideoController mVideoController;
+    @BindView(R.id.custom_video_controller)
+    CustomVideoController mVideoController;
     private String videoPath;
     private int mRotation = 0;
 
@@ -122,12 +122,12 @@ public class VideoPlayerFragment extends Fragment {
         // mVideoPlayView.setMirror(true);
 
         // You can also use a custom `MediaController` widget
-        //        VideoController mediaController = new VideoController(activity, !mIsLiveStreaming, mIsLiveStreaming);
-        //        mediaController.setOnClickSpeedAdjustListener(mOnClickSpeedAdjustListener);
-        //        mVideoPlayView.setMediaController(mediaController);
+//        VideoController mediaController = new VideoController(activity, !mIsLiveStreaming, mIsLiveStreaming);
+//        mediaController.setOnClickSpeedAdjustListener(mOnClickSpeedAdjustListener);
+//        mVideoPlayView.setMediaController(mediaController);
 
-        CustomVideoController videoController = new CustomVideoController(activity);
-        mVideoPlayView.setMediaController(videoController);
+//        CustomVideoController videoController = new CustomVideoController(activity);
+        mVideoPlayView.setMediaController(mVideoController);
 
         mVideoPlayView.setOnInfoListener(mOnInfoListener);
         mVideoPlayView.setOnVideoSizeChangedListener(mOnVideoSizeChangedListener);
