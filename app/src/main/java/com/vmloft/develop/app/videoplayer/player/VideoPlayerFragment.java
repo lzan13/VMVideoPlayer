@@ -1,6 +1,5 @@
 package com.vmloft.develop.app.videoplayer.player;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -9,49 +8,47 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import com.pili.pldroid.player.AVOptions;
+import com.pili.pldroid.player.PLOnAudioFrameListener;
 import com.pili.pldroid.player.PLOnBufferingUpdateListener;
 import com.pili.pldroid.player.PLOnCompletionListener;
 import com.pili.pldroid.player.PLOnErrorListener;
 import com.pili.pldroid.player.PLOnInfoListener;
+import com.pili.pldroid.player.PLOnVideoFrameListener;
 import com.pili.pldroid.player.PLOnVideoSizeChangedListener;
 import com.pili.pldroid.player.widget.PLVideoTextureView;
 import com.vmloft.develop.app.videoplayer.R;
+import com.vmloft.develop.app.videoplayer.bean.VideoDetailBean;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.library.tools.VMActivity;
+
+import java.util.Arrays;
 
 public class VideoPlayerFragment extends Fragment {
 
     private static final String TAG = "VideoPlayerFragment";
-    private VMActivity activity;
+    private VMActivity mActivity;
 
-    @BindView(R.id.view_video_player)
-    PLVideoTextureView mVideoPlayView;
-    @BindView(R.id.layout_loading)
-    LinearLayout mLoadingLayout;
-    @BindView(R.id.img_cover)
-    ImageView mCoverView;
-    @BindView(R.id.text_status_info)
-    TextView mStatusView;
+    //@BindView(R.id.layout_video_container) LinearLayout mVideoContainer;
+    @BindView(R.id.view_video_player) PLVideoTextureView mVideoPlayView;
+    @BindView(R.id.layout_loading) LinearLayout mLoadingLayout;
+    @BindView(R.id.img_cover) ImageView mCoverView;
+    @BindView(R.id.custom_video_controller) CustomVideoController mVideoController;
 
-    @BindView(R.id.custom_video_controller)
-    CustomVideoController mVideoController;
-    private String videoPath;
-    private int mRotation = 0;
+    //private PLVideoTextureView mVideoPlayView;
+
+    private VideoDetailBean videoDetailBean;
 
     private boolean mIsLiveStreaming = false;
-    private int mDisplayAspectRatio = PLVideoTextureView.ASPECT_RATIO_ORIGIN;
 
-    public static VideoPlayerFragment newInstance(String videoPath) {
+    public static VideoPlayerFragment newInstance(VideoDetailBean videoDetailBean) {
         VideoPlayerFragment fragment = new VideoPlayerFragment();
         Bundle args = new Bundle();
-        args.putString(VConstant.KEY_VIDEO_DETAIL, videoPath);
+        args.putParcelable(VConstant.KEY_VIDEO_DETAIL, videoDetailBean);
         fragment.setArguments(args);
         return fragment;
     }
@@ -60,7 +57,7 @@ public class VideoPlayerFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            videoPath = getArguments().getString(VConstant.KEY_VIDEO_DETAIL);
+            videoDetailBean = getArguments().getParcelable(VConstant.KEY_VIDEO_DETAIL);
         }
     }
 
@@ -73,7 +70,7 @@ public class VideoPlayerFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        activity = (VMActivity) getActivity();
+        mActivity = (VMActivity) getActivity();
         init();
     }
 
@@ -82,78 +79,67 @@ public class VideoPlayerFragment extends Fragment {
 
         mIsLiveStreaming = false;
 
+        //mVideoPlayView = new PLVideoTextureView(mActivity);
+        //LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+        //    ViewGroup.LayoutParams.MATCH_PARENT,
+        //    ViewGroup.LayoutParams.MATCH_PARENT,
+        //    Gravity.CENTER);
+        //mVideoContainer.addView(mVideoPlayView, 0, params);
+
         mVideoPlayView.setBufferingIndicator(mLoadingLayout);
 
         mVideoPlayView.setCoverView(mCoverView);
 
-        // If you want to fix display orientation such as landscape, you can use the code show as follow
-        //
-        // if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-        //     mVideoPlayView.setPreviewOrientation(0);
-        // }
-        // else if (this.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-        //     mVideoPlayView.setPreviewOrientation(270);
-        // }
-
         // 1 -> hw codec enable, 0 -> disable [recommended]
-        int codec = AVOptions.MEDIA_CODEC_SW_DECODE;
+        int codec = AVOptions.MEDIA_CODEC_AUTO;
         AVOptions options = new AVOptions();
         // the unit of timeout is ms
         options.setInteger(AVOptions.KEY_PREPARE_TIMEOUT, 10 * 1000);
-        options.setInteger(AVOptions.KEY_LIVE_STREAMING, mIsLiveStreaming ? 1 : 0);
         // 1 -> hw codec enable, 0 -> disable [recommended]
         options.setInteger(AVOptions.KEY_MEDIACODEC, codec);
+        options.setInteger(AVOptions.KEY_LIVE_STREAMING, mIsLiveStreaming ? 1 : 0);
         boolean disableLog = false;
+        //        options.setString(AVOptions.KEY_DNS_SERVER, "127.0.0.1");
         options.setInteger(AVOptions.KEY_LOG_LEVEL, disableLog ? 5 : 0);
-        // 设置拖动定位方式，1 为精准模式，即会拖动到时间戳的那一秒；0 为普通模式，会拖动到时间戳最近的关键帧。默认为 0
-        options.setInteger(AVOptions.KEY_SEEK_MODE, 1);
         boolean cache = false;
         if (!mIsLiveStreaming && cache) {
             //options.setString(AVOptions.KEY_CACHE_DIR, Config.DEFAULT_CACHE_DIR);
         }
+        //boolean vcallback = getIntent().getBooleanExtra("video-data-callback", false);
+        //if (vcallback) {
+        //    options.setInteger(AVOptions.KEY_VIDEO_DATA_CALLBACK, 1);
+        //}
+        //boolean acallback = getIntent().getBooleanExtra("audio-data-callback", false);
+        //if (acallback) {
+        //    options.setInteger(AVOptions.KEY_AUDIO_DATA_CALLBACK, 1);
+        //}
         if (!mIsLiveStreaming) {
             //int startPos = getIntent().getIntExtra("start-pos", 0);
             //options.setInteger(AVOptions.KEY_START_POSITION, startPos * 1000);
         }
         mVideoPlayView.setAVOptions(options);
 
-        // You can mirror the display
-        // mVideoPlayView.setMirror(true);
-
-        // You can also use a custom `MediaController` widget
-//        VideoController mediaController = new VideoController(activity, !mIsLiveStreaming, mIsLiveStreaming);
-//        mediaController.setOnClickSpeedAdjustListener(mOnClickSpeedAdjustListener);
-//        mVideoPlayView.setMediaController(mediaController);
-
-//        CustomVideoController videoController = new CustomVideoController(activity);
-        mVideoPlayView.setMediaController(mVideoController);
-
+        // Set some listeners
         mVideoPlayView.setOnInfoListener(mOnInfoListener);
         mVideoPlayView.setOnVideoSizeChangedListener(mOnVideoSizeChangedListener);
         mVideoPlayView.setOnBufferingUpdateListener(mOnBufferingUpdateListener);
         mVideoPlayView.setOnCompletionListener(mOnCompletionListener);
         mVideoPlayView.setOnErrorListener(mOnErrorListener);
-        //mVideoPlayView.setOnPreparedListener(mOnPreparedListener);
-        //mVideoPlayView.setOnSeekCompleteListener(mOnSeekCompleteListener);
+        mVideoPlayView.setOnVideoFrameListener(mOnVideoFrameListener);
+        mVideoPlayView.setOnAudioFrameListener(mOnAudioFrameListener);
 
+        mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
         mVideoPlayView.setLooping(false);
 
-        mVideoPlayView.setVideoPath(videoPath);
-    }
+        // You can also use a custom `MediaController` widget
+        mVideoPlayView.setMediaController(mVideoController);
+        mVideoController.setTitle(videoDetailBean.getTitle());
 
-    //    @OnClick({R.id.img_fullscreen})
-    //    public void onClick(View view) {
-    //        switch (view.getId()) {
-    //            case R.id.img_fullscreen:
-    //                onFullscreen(view);
-    //                break;
-    //        }
-    //    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        mVideoPlayView.pause();
+//        Glide.with(mActivity)
+//                .load(videoDetailBean.getPic_url())
+//                .crossFade()
+//                .placeholder(R.mipmap.pic_loading)
+//                .into(mCoverView);
     }
 
     @Override
@@ -163,38 +149,15 @@ public class VideoPlayerFragment extends Fragment {
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        mVideoPlayView.pause();
+    }
+
+    @Override
     public void onDestroy() {
         super.onDestroy();
         mVideoPlayView.stopPlayback();
-    }
-
-    public void onScaleMode(View v) {
-        mRotation = (mRotation + 90) % 360;
-        mVideoPlayView.setDisplayOrientation(mRotation);
-    }
-
-    public void onFullscreen(View v) {
-        mDisplayAspectRatio = (mDisplayAspectRatio + 1) % 5;
-        mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
-        switch (mVideoPlayView.getDisplayAspectRatio()) {
-            case PLVideoTextureView.ASPECT_RATIO_ORIGIN:
-                showToastTips(activity, "Origin mode");
-                break;
-            case PLVideoTextureView.ASPECT_RATIO_FIT_PARENT:
-                showToastTips(activity, "Fit parent !");
-                break;
-            case PLVideoTextureView.ASPECT_RATIO_PAVED_PARENT:
-                showToastTips(activity, "Paved parent !");
-                break;
-            case PLVideoTextureView.ASPECT_RATIO_16_9:
-                showToastTips(activity, "16 : 9 !");
-                break;
-            case PLVideoTextureView.ASPECT_RATIO_4_3:
-                showToastTips(activity, "4 : 3 !");
-                break;
-            default:
-                break;
-        }
     }
 
     private PLOnInfoListener mOnInfoListener = new PLOnInfoListener() {
@@ -207,10 +170,8 @@ public class VideoPlayerFragment extends Fragment {
                 case PLOnInfoListener.MEDIA_INFO_BUFFERING_END:
                     break;
                 case PLOnInfoListener.MEDIA_INFO_VIDEO_RENDERING_START:
-                    showToastTips(activity, "First video render time: " + extra + "ms");
                     break;
                 case PLOnInfoListener.MEDIA_INFO_AUDIO_RENDERING_START:
-                    Log.i(TAG, "First audio render time: " + extra + "ms");
                     break;
                 case PLOnInfoListener.MEDIA_INFO_VIDEO_FRAME_RENDERING:
                     Log.i(TAG, "video frame rendering, ts = " + extra);
@@ -229,14 +190,13 @@ public class VideoPlayerFragment extends Fragment {
                     break;
                 case PLOnInfoListener.MEDIA_INFO_VIDEO_BITRATE:
                 case PLOnInfoListener.MEDIA_INFO_VIDEO_FPS:
-                    updateStatInfo();
+                    //updateStatInfo();
                     break;
                 case PLOnInfoListener.MEDIA_INFO_CONNECTED:
                     Log.i(TAG, "Connected !");
                     break;
                 case PLOnInfoListener.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
                     Log.i(TAG, "Rotation changed: " + extra);
-                    break;
                 default:
                     break;
             }
@@ -252,16 +212,13 @@ public class VideoPlayerFragment extends Fragment {
                     /**
                      * SDK will do reconnecting automatically
                      */
-                    showToastTips(activity, "IO Error !");
+                    Log.e(TAG, "IO Error!");
                     return false;
                 case PLOnErrorListener.ERROR_CODE_OPEN_FAILED:
-                    showToastTips(activity, "failed to open player !");
                     break;
                 case PLOnErrorListener.ERROR_CODE_SEEK_FAILED:
-                    showToastTips(activity, "failed to seek !");
                     break;
                 default:
-                    showToastTips(activity, "unknown error !");
                     break;
             }
             return true;
@@ -272,7 +229,10 @@ public class VideoPlayerFragment extends Fragment {
         @Override
         public void onCompletion() {
             Log.i(TAG, "Play Completed !");
-            showToastTips(activity, "Play Completed !");
+            if (!mIsLiveStreaming) {
+                //mVideoController.refreshProgress();
+            }
+            //finish();
         }
     };
 
@@ -290,38 +250,44 @@ public class VideoPlayerFragment extends Fragment {
         }
     };
 
-    private VideoController.OnClickSpeedAdjustListener mOnClickSpeedAdjustListener = new VideoController.OnClickSpeedAdjustListener() {
+    private PLOnVideoFrameListener mOnVideoFrameListener = new PLOnVideoFrameListener() {
         @Override
-        public void onClickNormal() {
-            // 0x0001/0x0001 = 2
-            mVideoPlayView.setPlaySpeed(0X00010001);
-        }
-
-        @Override
-        public void onClickFaster() {
-            // 0x0002/0x0001 = 2
-            mVideoPlayView.setPlaySpeed(0X00020001);
-        }
-
-        @Override
-        public void onClickSlower() {
-            // 0x0001/0x0002 = 0.5
-            mVideoPlayView.setPlaySpeed(0X00010002);
+        public void onVideoFrameAvailable(byte[] data, int size, int width, int height, int format, long ts) {
+            Log.i(TAG, "onVideoFrameAvailable: " + size + ", " + width + " x " + height + ", " + format + ", " + ts);
+            if (format == PLOnVideoFrameListener.VIDEO_FORMAT_SEI && bytesToHex(Arrays.copyOfRange(data, 19, 23))
+                    .equals("ts64")) {
+                // If the RTMP stream is from Qiniu
+                // Add &addtssei=true to the end of URL to enable SEI timestamp.
+                // Format of the byte array:
+                // 0:       SEI TYPE                    This is part of h.264 standard.
+                // 1:       unregistered user data      This is part of h.264 standard.
+                // 2:       payload length              This is part of h.264 standard.
+                // 3-18:    uuid                        This is part of h.264 standard.
+                // 19-22:   ts64                        Magic string to mark this stream is from Qiniu
+                // 23-30:   timestamp                   The timestamp
+                // 31:      0x80                        Magic hex in ffmpeg
+                Log.i(TAG, " timestamp: " + Long.valueOf(bytesToHex(Arrays.copyOfRange(data, 23, 31)), 16));
+            }
         }
     };
 
-    private void updateStatInfo() {
-        long bitrate = mVideoPlayView.getVideoBitrate() / 1024;
-        final String stat = bitrate + "kbps, " + mVideoPlayView.getVideoFps() + "fps";
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                mStatusView.setText(stat);
-            }
-        });
+    private PLOnAudioFrameListener mOnAudioFrameListener = new PLOnAudioFrameListener() {
+        @Override
+        public void onAudioFrameAvailable(byte[] data, int size, int samplerate, int channels, int datawidth, long ts) {
+            Log.i(TAG, "onAudioFrameAvailable: " + size + ", " + samplerate + ", " + channels + ", " + datawidth + ", " + ts);
+        }
+    };
+
+
+    private String bytesToHex(byte[] bytes) {
+        char[] hexArray = "0123456789ABCDEF".toCharArray();
+        char[] hexChars = new char[bytes.length * 2];
+        for (int j = 0; j < bytes.length; j++) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
     }
 
-    public void showToastTips(final Context context, final String tips) {
-        Toast.makeText(context, tips, Toast.LENGTH_SHORT).show();
-    }
 }

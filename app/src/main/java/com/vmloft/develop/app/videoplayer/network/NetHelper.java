@@ -1,8 +1,9 @@
 package com.vmloft.develop.app.videoplayer.network;
 
 import com.vmloft.develop.app.videoplayer.R;
-import com.vmloft.develop.app.videoplayer.bean.ResultBean;
-import com.vmloft.develop.app.videoplayer.bean.VideoBean;
+import com.vmloft.develop.app.videoplayer.bean.ResponseBean;
+import com.vmloft.develop.app.videoplayer.bean.VideoDetailBean;
+import com.vmloft.develop.app.videoplayer.bean.VideoSimpleBean;
 import com.vmloft.develop.app.videoplayer.common.VCallback;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.app.videoplayer.common.VError;
@@ -12,6 +13,7 @@ import com.vmloft.develop.library.tools.utils.VMStr;
 import java.io.IOException;
 import java.net.ConnectException;
 import java.net.SocketTimeoutException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import okhttp3.FormBody;
@@ -41,16 +43,16 @@ public class NetHelper {
     NetHelper() {
         // 实例化 OkHttpClient，如果不自己创建 Retrofit 也会创建一个默认的
         client = new OkHttpClient.Builder().retryOnConnectionFailure(true)
-            //                .addInterceptor(new RequestInterceptor())
-            .connectTimeout(20, TimeUnit.SECONDS)
-            .writeTimeout(20, TimeUnit.SECONDS)
-            .readTimeout(20, TimeUnit.SECONDS)
-            .build();
+                //                .addInterceptor(new RequestInterceptor())
+                .connectTimeout(20, TimeUnit.SECONDS)
+                .writeTimeout(20, TimeUnit.SECONDS)
+                .readTimeout(20, TimeUnit.SECONDS)
+                .build();
         // 实例化 Retrofit
         retrofit = new Retrofit.Builder().client(client)
-            .baseUrl(VConstant.BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build();
+                .baseUrl(VConstant.BASE_URL_1_1)
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
         // 创建 Retrofit 接口实例
         netAPI = retrofit.create(INetAPI.class);
     }
@@ -119,26 +121,46 @@ public class NetHelper {
         }
     }
 
+
     /**
-     * 获取视频列表
-     *
-     * @param callback
+     * 请求视频列表
      */
-    public void getVideoList(final VCallback callback) {
-        Call<ResultBean> call = netAPI.getVideoList("video", 1);
-        call.enqueue(new Callback<ResultBean>() {
+    public void requestVideoList(final VCallback callback) {
+        Call<ResponseBean<List<VideoSimpleBean>>> call = netAPI.getVideoList(null, null, null, null, null, "0", "20");
+        call.enqueue(new Callback<ResponseBean<List<VideoSimpleBean>>>() {
             @Override
-            public void onResponse(Call<ResultBean> call, Response<ResultBean> response) {
+            public void onResponse(Call<ResponseBean<List<VideoSimpleBean>>> call, Response<ResponseBean<List<VideoSimpleBean>>> response) {
                 if (response.isSuccessful()) {
-                    ResultBean resultBean = response.body();
-                    callback.onDone(resultBean);
+                    callback.onDone(response.body().getData());
                 } else {
                     callback.onError(response.code(), response.message());
                 }
             }
 
             @Override
-            public void onFailure(Call<ResultBean> call, Throwable t) {
+            public void onFailure(Call<ResponseBean<List<VideoSimpleBean>>> call, Throwable t) {
+                parseThrowable(t, callback);
+            }
+        });
+    }
+
+    /**
+     * 请求视频详情
+     */
+    public void requestVideoDetail(String videoId, final VCallback callback) {
+        Call<ResponseBean<VideoDetailBean>> call = netAPI.getVideoDetail(videoId, null);
+        call.enqueue(new Callback<ResponseBean<VideoDetailBean>>() {
+            @Override
+            public void onResponse(Call<ResponseBean<VideoDetailBean>> call, Response<ResponseBean<VideoDetailBean>> response) {
+                if (response.isSuccessful()) {
+                    callback.onDone(response.body().getData());
+                } else {
+                    callback.onError(response.code(), response.message());
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBean<VideoDetailBean>> call, Throwable t) {
                 parseThrowable(t, callback);
             }
         });
@@ -147,7 +169,7 @@ public class NetHelper {
     /**
      * 请求出现异常错误处理
      *
-     * @param e 异常
+     * @param e        异常
      * @param callback 回调
      */
     public void parseThrowable(Throwable e, VCallback callback) {

@@ -38,8 +38,8 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <ProgressBar
-            android:layout_width="@dimen/vm_dimen_36"
-            android:layout_height="@dimen/vm_dimen_36"
+            android:layout_width="@dimen/vm_dimen_24"
+            android:layout_height="@dimen/vm_dimen_24"
             android:layout_margin="@dimen/vm_margin_normal" />
 
         <TextView
@@ -66,7 +66,6 @@
         android:id="@+id/custom_video_controller"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:background="@color/vm_orange_54"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

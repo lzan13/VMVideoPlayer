@@ -5,11 +5,18 @@ package com.vmloft.develop.app.videoplayer.common;
  */
 public class VConstant {
 
-    // 开眼视频
-//    public static final String BASE_URL = "http://baobab.kaiyanapp.com/api/v4/tabs/selected";
-    // 头条视频
-    public static final String BASE_URL = "http://is.snssdk.com/";
 
+    public static final String HTTP_PROTOCOL = "http://";
+    public static final String DOMAIN_1_0 = "api.baoge.tv";
+    public static final String DOMAIN_1_1 = "api1.1.baoge.tv";
+    public static final String BASE_URL = HTTP_PROTOCOL + DOMAIN_1_0 + "/";
+    public static final String BASE_URL_1_1 = HTTP_PROTOCOL + DOMAIN_1_1 + "/";
+
+    public static final String SHARE_BASE_URL = "http://share.baoge.tv/%s";
+    public static final String KEY_WEB_BASE = "http://share.baoge.tv/article.php?id=%S";
+
+
+    public static final String KEY_VIDEO_ID = "key_video_id";
     public static final String KEY_VIDEO_DETAIL = "key_video_detail";
 
 }
