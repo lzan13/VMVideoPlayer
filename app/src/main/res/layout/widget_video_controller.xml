@@ -1,42 +1,116 @@
 <?xml version="1.0" encoding="utf-8"?>
 <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/layout_controller_container"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    >
+    <android.support.constraint.ConstraintLayout
+        android:id="@+id/layout_controller_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        >
+        <!--标题背景-->
+        <View
+            android:id="@+id/view_title_bg"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/vm_dimen_36"
+            android:background="@color/vm_black_38"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
 
-    <View
-        android:id="@+id/view_title_bg"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/vm_dimen_48"
-        android:background="@color/vm_black_38"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!--返回按钮-->
-    <ImageView
-        android:id="@+id/img_back"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/vm_dimen_16"
-        android:src="@drawable/ic_arrow_back"
-        app:layout_constraintBottom_toBottomOf="@+id/view_title_bg"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view_title_bg" />
-
-    <TextView
-        android:id="@+id/text_title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/vm_dimen_48"
-        android:text="@string/app_name"
-        android:textColor="@color/vm_white_87"
-        android:textSize="@dimen/vm_size_title"
-        app:layout_constraintBottom_toBottomOf="@+id/view_title_bg"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/view_title_bg" />
-
+        <!--返回按钮-->
+        <ImageView
+            android:id="@+id/img_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/vm_dimen_16"
+            android:src="@drawable/ic_arrow_back"
+            app:layout_constraintBottom_toBottomOf="@+id/view_title_bg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/view_title_bg"
+            />
+        <!--标题-->
+        <TextView
+            android:id="@+id/text_title"
+            android:layout_width="@dimen/vm_dimen_0"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/vm_dimen_16"
+            android:layout_marginStart="@dimen/vm_dimen_48"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:text="@string/app_name"
+            android:textColor="@color/vm_white_87"
+            android:textSize="@dimen/vm_size_subhead"
+            app:layout_constraintBottom_toBottomOf="@+id/view_title_bg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/view_title_bg"
+            />
+        <!--播放按钮-->
+        <ImageView
+            android:id="@+id/img_play"
+            android:layout_width="@dimen/vm_dimen_48"
+            android:layout_height="@dimen/vm_dimen_48"
+            android:src="@drawable/ic_pause_circle_filled"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
+        <!--全屏按钮-->
+        <ImageView
+            android:id="@+id/img_fullscreen"
+            android:layout_width="@dimen/vm_dimen_48"
+            android:layout_height="@dimen/vm_dimen_48"
+            android:layout_margin="@dimen/vm_margin_normal"
+            android:padding="@dimen/vm_padding_normal"
+            android:src="@drawable/ic_fullscreen"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            />
+        <!--已播放时间-->
+        <TextView
+            android:id="@+id/text_play_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="@dimen/vm_dimen_20"
+            android:layout_marginStart="@dimen/vm_dimen_8"
+            android:text="00:00"
+            android:textColor="@color/vm_white_87"
+            android:textSize="@dimen/vm_size_body"
+            app:layout_constraintBottom_toBottomOf="@+id/img_fullscreen"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/img_fullscreen"
+            />
+        <!--视频总时间-->
+        <TextView
+            android:id="@+id/text_duration_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/vm_dimen_20"
+            android:text="00:00"
+            android:textColor="@color/vm_white_87"
+            android:textSize="@dimen/vm_size_body"
+            app:layout_constraintBottom_toBottomOf="@+id/img_fullscreen"
+            app:layout_constraintEnd_toStartOf="@+id/img_fullscreen"
+            app:layout_constraintTop_toTopOf="@+id/img_fullscreen"
+            />
+        <!--播放进度拖动条-->
+        <com.vmloft.develop.app.videoplayer.widget.PlaySeekBar
+            android:id="@+id/seek_bar_play"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/vm_dimen_8"
+            app:layout_constraintBottom_toBottomOf="@+id/text_play_time"
+            app:layout_constraintEnd_toStartOf="@+id/text_duration_time"
+            app:layout_constraintStart_toEndOf="@+id/text_play_time"
+            app:layout_constraintTop_toTopOf="@+id/text_play_time"
+            />
+    </android.support.constraint.ConstraintLayout>
     <!--锁定按钮-->
     <ImageView
         android:id="@+id/img_lock"
@@ -48,79 +122,14 @@
         android:src="@drawable/ic_lock_open"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!--播放按钮-->
-    <ImageView
-        android:id="@+id/img_play"
-        android:layout_width="@dimen/vm_dimen_48"
-        android:layout_height="@dimen/vm_dimen_48"
-        android:src="@drawable/ic_play_circle_filled"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!--全屏按钮-->
-    <ImageView
-        android:id="@+id/img_fullscreen"
-        android:layout_width="@dimen/vm_dimen_48"
-        android:layout_height="@dimen/vm_dimen_48"
-        android:layout_margin="@dimen/vm_margin_normal"
-        android:padding="@dimen/vm_padding_normal"
-        android:src="@drawable/ic_fullscreen"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-
-    <!--已播放时间-->
-    <TextView
-        android:id="@+id/text_play_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_marginEnd="@dimen/vm_dimen_20"
-        android:layout_marginStart="@dimen/vm_dimen_8"
-        android:text="00:00"
-        android:textColor="@color/vm_white_87"
-        android:textSize="@dimen/vm_size_body"
-        app:layout_constraintBottom_toBottomOf="@+id/img_fullscreen"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/img_fullscreen"
+        app:layout_constraintTop_toTopOf="parent"
         />
-
-    <!--视频总时间-->
-    <TextView
-        android:id="@+id/text_duration_time"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_marginStart="@dimen/vm_dimen_20"
-        android:text="00:00"
-        android:textColor="@color/vm_white_87"
-        android:textSize="@dimen/vm_size_body"
-        app:layout_constraintBottom_toBottomOf="@+id/img_fullscreen"
-        app:layout_constraintEnd_toStartOf="@+id/img_fullscreen"
-        app:layout_constraintTop_toTopOf="@+id/img_fullscreen"
-        />
-
-    <!--播放进度拖动条-->
-    <com.vmloft.develop.app.videoplayer.widget.PlaySeekBar
-        android:id="@+id/seek_bar_play"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/vm_dimen_8"
-        app:layout_constraintBottom_toBottomOf="@+id/text_play_time"
-        app:layout_constraintEnd_toStartOf="@+id/text_duration_time"
-        app:layout_constraintStart_toEndOf="@+id/text_play_time"
-        app:layout_constraintTop_toTopOf="@+id/text_play_time"
-        />
-
     <!--播放进度条-->
     <com.vmloft.develop.app.videoplayer.widget.PlayProgressBar
         android:id="@+id/progress_bar_play"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

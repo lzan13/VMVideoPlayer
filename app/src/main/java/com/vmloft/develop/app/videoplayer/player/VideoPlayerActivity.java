@@ -1,7 +1,6 @@
 package com.vmloft.develop.app.videoplayer.player;
 
 import android.content.Context;
-import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
@@ -10,15 +9,12 @@ import android.view.View;
 import android.view.WindowManager;
 
 import com.vmloft.develop.app.videoplayer.R;
-import com.vmloft.develop.app.videoplayer.bean.ResponseBean;
 import com.vmloft.develop.app.videoplayer.bean.VideoDetailBean;
 import com.vmloft.develop.app.videoplayer.common.VCallback;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.app.videoplayer.network.NetHelper;
 import com.vmloft.develop.library.tools.VMActivity;
 import com.vmloft.develop.library.tools.utils.VMLog;
-
-import retrofit2.Call;
 
 /**
  * Create by lzan13 on 2018/8/24
@@ -44,8 +40,8 @@ public class VideoPlayerActivity extends VMActivity {
         videoId = getIntent().getStringExtra(VConstant.KEY_VIDEO_ID);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
-                .getDefaultDisplay().getMetrics(displayMetrics);
+        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+            .getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
         int playerHeight = screenWidth * 720 / 1280;
         playerContainer.getLayoutParams().height = playerHeight;
@@ -80,7 +76,8 @@ public class VideoPlayerActivity extends VMActivity {
             videoPlayerFragment = null;
         }
         videoPlayerFragment = VideoPlayerFragment.newInstance(videoDetailBean);
-        transaction.replace(R.id.fragment_video_container, videoPlayerFragment).commitAllowingStateLoss();
+        transaction.replace(R.id.fragment_video_container, videoPlayerFragment)
+            .commitAllowingStateLoss();
     }
 
     //设置
@@ -100,4 +97,11 @@ public class VideoPlayerActivity extends VMActivity {
     //重新setContentView这种方法可以达到横屏切换不重启，
     //布局可以刷新，但是会重新设置view，其他数据不会被销毁。
 
+    @Override
+    public void onBackPressed() {
+        if (videoPlayerFragment.mVideoController.interceptBack()) {
+            return;
+        }
+        super.onBackPressed();
+    }
 }

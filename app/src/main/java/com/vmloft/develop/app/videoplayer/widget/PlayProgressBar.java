@@ -50,7 +50,7 @@ public class PlayProgressBar extends View {
     }
 
     private void init(Context context, AttributeSet attrs, int defStyleAttr) {
-        barHeight = VMDimen.dp2px(6);
+        barHeight = VMDimen.dp2px(2);
 
         barPaint = new Paint();
         barPaint.setAntiAlias(true);

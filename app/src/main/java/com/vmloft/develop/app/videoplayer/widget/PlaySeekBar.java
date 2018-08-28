@@ -75,8 +75,8 @@ public class PlaySeekBar extends View {
     private void init(Context context, AttributeSet attrs, int defStyleAttr) {
         mTouchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
         circleColor = getResources().getColor(R.color.vm_white);
-        barHeight = VMDimen.dp2px(4);
-        minHeight = VMDimen.dp2px(30);
+        barHeight = VMDimen.dp2px(2);
+        minHeight = VMDimen.dp2px(15);
         startColor = getResources().getColor(R.color.play_seek_bar_start);
         endColor = getResources().getColor(R.color.play_seek_bar_end);
         Log.i(TAG, "init: circleRadius " + circleRadius + " barHeight " + barHeight);
