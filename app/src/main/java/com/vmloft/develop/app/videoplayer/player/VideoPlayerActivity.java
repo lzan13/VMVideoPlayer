@@ -27,8 +27,7 @@ import butterknife.OnClick;
  */
 public class VideoPlayerActivity extends VMActivity {
 
-    @BindView(R.id.fragment_video_container)
-    FrameLayout playerContainer;
+    @BindView(R.id.fragment_video_container) FrameLayout playerContainer;
     private VideoPlayerFragment videoPlayerFragment;
 
     private String videoId;
@@ -49,7 +48,7 @@ public class VideoPlayerActivity extends VMActivity {
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-                .getMetrics(displayMetrics);
+            .getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
         int playerHeight = screenWidth * 720 / 1280;
         playerContainer.getLayoutParams().height = playerHeight;
@@ -85,34 +84,32 @@ public class VideoPlayerActivity extends VMActivity {
         }
         videoPlayerFragment = VideoPlayerFragment.newInstance(videoDetailBean);
         transaction.replace(R.id.fragment_video_container, videoPlayerFragment)
-                .commitAllowingStateLoss();
+            .commitAllowingStateLoss();
     }
-
 
     @Override
     public void onBackPressed() {
-        if (videoPlayerFragment.mVideoController.interceptBack()) {
+        if (videoPlayerFragment.mController.interceptBack()) {
             return;
         }
         super.onBackPressed();
     }
 
-    @OnClick({R.id.btn_rotate})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_rotate:
-                rotateUI();
-                break;
-        }
+    private void changeLayoutParam() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
+            .getMetrics(displayMetrics);
+        int screenWidth = displayMetrics.widthPixels;
+        int playerHeight = screenWidth * 720 / 1280;
+        playerContainer.getLayoutParams().height = playerHeight;
     }
-
 
     /**
      * 旋转 UI
      */
-    private void rotateUI() {
-        //        videoPlayerFragment.mVideoController.onFullscreen();
-        if (videoPlayerFragment.mVideoController.isFullscreen()) {
+    public void rotateUI() {
+        //        videoPlayerFragment.mController.onFullscreen();
+        if (videoPlayerFragment.mController.isFullscreen()) {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         } else {
             setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -122,6 +119,7 @@ public class VideoPlayerActivity extends VMActivity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        changeLayoutParam();
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             VMLog.i("屏幕方向变化，当前为竖屏模式");
         } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {

@@ -13,12 +13,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import com.pili.pldroid.player.AVOptions;
-import com.pili.pldroid.player.PLOnAudioFrameListener;
 import com.pili.pldroid.player.PLOnBufferingUpdateListener;
 import com.pili.pldroid.player.PLOnCompletionListener;
 import com.pili.pldroid.player.PLOnErrorListener;
 import com.pili.pldroid.player.PLOnInfoListener;
-import com.pili.pldroid.player.PLOnVideoFrameListener;
 import com.pili.pldroid.player.PLOnVideoSizeChangedListener;
 import com.pili.pldroid.player.widget.PLVideoTextureView;
 import com.vmloft.develop.app.videoplayer.R;
@@ -26,8 +24,6 @@ import com.vmloft.develop.app.videoplayer.bean.VideoDetailBean;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.app.videoplayer.imageloader.VImageLoader;
 import com.vmloft.develop.library.tools.VMActivity;
-
-import java.util.Arrays;
 
 public class VideoPlayerFragment extends Fragment {
 
@@ -37,11 +33,9 @@ public class VideoPlayerFragment extends Fragment {
     @BindView(R.id.view_video_player) PLVideoTextureView mVideoPlayView;
     @BindView(R.id.layout_loading) LinearLayout mLoadingLayout;
     @BindView(R.id.img_cover) ImageView mCoverView;
-    @BindView(R.id.custom_video_controller) CustomVideoController mVideoController;
+    @BindView(R.id.custom_video_controller) CustomController mController;
 
     private VideoDetailBean videoDetailBean;
-
-    private boolean mIsLiveStreaming = false;
 
     public static VideoPlayerFragment newInstance(VideoDetailBean videoDetailBean) {
         VideoPlayerFragment fragment = new VideoPlayerFragment();
@@ -78,42 +72,13 @@ public class VideoPlayerFragment extends Fragment {
     protected void init() {
         ButterKnife.bind(this, getView());
 
-        mIsLiveStreaming = false;
+        initOptions();
 
+        // 设置加载布局
         mVideoPlayView.setBufferingIndicator(mLoadingLayout);
-
+        // 设置封面控件
         mVideoPlayView.setCoverView(mCoverView);
-
-        // 1 -> hw codec enable, 0 -> disable [recommended]
-        int codec = AVOptions.MEDIA_CODEC_AUTO;
-        AVOptions options = new AVOptions();
-        // the unit of timeout is ms
-        options.setInteger(AVOptions.KEY_PREPARE_TIMEOUT, 10 * 1000);
-        // 1 -> hw codec enable, 0 -> disable [recommended]
-        options.setInteger(AVOptions.KEY_MEDIACODEC, codec);
-        options.setInteger(AVOptions.KEY_LIVE_STREAMING, mIsLiveStreaming ? 1 : 0);
-        boolean disableLog = false;
-        //        options.setString(AVOptions.KEY_DNS_SERVER, "127.0.0.1");
-        options.setInteger(AVOptions.KEY_LOG_LEVEL, disableLog ? 5 : 0);
-        boolean cache = false;
-        if (!mIsLiveStreaming && cache) {
-            //options.setString(AVOptions.KEY_CACHE_DIR, Config.DEFAULT_CACHE_DIR);
-        }
-        //boolean vcallback = getIntent().getBooleanExtra("video-data-callback", false);
-        //if (vcallback) {
-        //    options.setInteger(AVOptions.KEY_VIDEO_DATA_CALLBACK, 1);
-        //}
-        //boolean acallback = getIntent().getBooleanExtra("audio-data-callback", false);
-        //if (acallback) {
-        //    options.setInteger(AVOptions.KEY_AUDIO_DATA_CALLBACK, 1);
-        //}
-        if (!mIsLiveStreaming) {
-            //int startPos = getIntent().getIntExtra("start-pos", 0);
-            //options.setInteger(AVOptions.KEY_START_POSITION, startPos * 1000);
-        }
-        mVideoPlayView.setAVOptions(options);
-
-        // Set some listeners
+        // 设置视频播放的一些监听
         mVideoPlayView.setOnInfoListener(mOnInfoListener);
         mVideoPlayView.setOnVideoSizeChangedListener(mOnVideoSizeChangedListener);
         mVideoPlayView.setOnBufferingUpdateListener(mOnBufferingUpdateListener);
@@ -123,11 +88,44 @@ public class VideoPlayerFragment extends Fragment {
         mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
         mVideoPlayView.setLooping(false);
 
-        // You can also use a custom `MediaController` widget
-        mVideoPlayView.setMediaController(mVideoController);
-        mVideoController.setTitle(videoDetailBean.getTitle());
+        // 设置视频播放控制器
+        mVideoPlayView.setMediaController(mController);
+        mController.setOnCtrlActionListener(new CustomController.OnCtrlActionListener() {
+            @Override
+            public void onAction(int action) {
+                if (action == CustomController.ACTION_FULLSCREEN) {
+                    ((VideoPlayerActivity) getActivity()).rotateUI();
+                }
+            }
+        });
+        mController.setTitle(videoDetailBean.getTitle());
 
         VImageLoader.loadImage(mActivity, mCoverView, videoDetailBean.getPic_url(), R.drawable.img_placeholder);
+    }
+
+    /**
+     * 初始化视频播放配置信息
+     */
+    private void initOptions() {
+        AVOptions options = new AVOptions();
+
+        // 打开视频时单次 http 请求的超时时间，一次打开过程最多尝试五次 单位为 ms
+        options.setInteger(AVOptions.KEY_PREPARE_TIMEOUT, 10 * 1000);
+        // 解码方式
+        // codec＝AVOptions.MEDIA_CODEC_HW_DECODE，硬解
+        // codec=AVOptions.MEDIA_CODEC_SW_DECODE, 软解
+        // codec=AVOptions.MEDIA_CODEC_AUTO, 硬解优先，失败后自动切换到软解
+        // 默认值是：MEDIA_CODEC_SW_DECODE
+        int codec = AVOptions.MEDIA_CODEC_AUTO; // 解码方式:
+        options.setInteger(AVOptions.KEY_MEDIACODEC, codec);
+
+        // 设置偏好的视频格式，设置后会加快对应格式视频流的打开速度，但播放其他格式会出错
+        // m3u8 = 1, mp4 = 2, flv = 3
+        options.setInteger(AVOptions.KEY_PREFER_FORMAT, 2);
+        // 设置日志级别
+        int logLevel = 2;
+        options.setInteger(AVOptions.KEY_LOG_LEVEL, logLevel);
+        mVideoPlayView.setAVOptions(options);
     }
 
     @Override
@@ -217,9 +215,6 @@ public class VideoPlayerFragment extends Fragment {
         @Override
         public void onCompletion() {
             Log.i(TAG, "Play Completed !");
-            if (!mIsLiveStreaming) {
-                //mVideoController.refreshProgress();
-            }
             //finish();
         }
     };

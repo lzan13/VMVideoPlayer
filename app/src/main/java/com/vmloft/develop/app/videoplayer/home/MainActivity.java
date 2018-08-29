@@ -117,39 +117,4 @@ public class MainActivity extends VMActivity {
         intent.putExtra(VConstant.KEY_VIDEO_ID, videoId);
         startActivity(intent);
     }
-
-
-    @OnClick({R.id.btn_rotate})
-    public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.btn_rotate:
-                rotateUI();
-                break;
-        }
-    }
-
-    /**
-     * 旋转 UI
-     */
-    private void rotateUI() {
-        if (isFullscreen) {
-            isFullscreen = false;
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-        } else {
-            isFullscreen = true;
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        }
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
-            VMLog.i("屏幕方向变化，当前为竖屏模式");
-        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            VMLog.i("屏幕方向变化，当前为横屏模式");
-        } else {
-            VMLog.i("屏幕方向变化，不知道当前什么模式");
-        }
-    }
 }

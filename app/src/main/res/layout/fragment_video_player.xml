@@ -68,7 +68,7 @@
         />
 
     <!--播放控制器，包括控制器 UI 和控制逻辑-->
-    <com.vmloft.develop.app.videoplayer.player.CustomVideoController
+    <com.vmloft.develop.app.videoplayer.player.CustomController
         android:id="@+id/custom_video_controller"
         android:layout_width="match_parent"
         android:layout_height="0dp"
