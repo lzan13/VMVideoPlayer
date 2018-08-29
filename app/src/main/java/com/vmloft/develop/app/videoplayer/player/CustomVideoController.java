@@ -12,18 +12,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.PopupWindow;
-import android.widget.SeekBar;
 import android.widget.TextView;
 
 import butterknife.OnClick;
+
 import com.pili.pldroid.player.IMediaController;
 import com.vmloft.develop.app.videoplayer.R;
 import com.vmloft.develop.app.videoplayer.common.VApp;
 import com.vmloft.develop.app.videoplayer.widget.PlayProgressBar;
 import com.vmloft.develop.app.videoplayer.widget.PlaySeekBar;
-import com.vmloft.develop.library.tools.VMApp;
-import com.vmloft.develop.library.tools.utils.VMLog;
+import com.vmloft.develop.library.tools.VMActivity;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -49,16 +47,26 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
 
     // UI 控件
     private View mAnchorView;
-    @BindView(R.id.layout_controller_container) View mRootView;
-    @BindView(R.id.img_back) ImageView mBackView;
-    @BindView(R.id.text_title) TextView mTitleView;
-    @BindView(R.id.img_lock) ImageView mLockView;
-    @BindView(R.id.img_play) ImageView mPlayView;
-    @BindView(R.id.img_fullscreen) ImageView mFullscreenView;
-    @BindView(R.id.text_play_time) TextView mPlayTimeView;
-    @BindView(R.id.text_duration_time) TextView mDurationTimeView;
-    @BindView(R.id.progress_bar_play) PlayProgressBar mProgressBar;
-    @BindView(R.id.seek_bar_play) PlaySeekBar mSeekBar;
+    @BindView(R.id.layout_controller_container)
+    View mRootView;
+    @BindView(R.id.img_back)
+    ImageView mBackView;
+    @BindView(R.id.text_title)
+    TextView mTitleView;
+    @BindView(R.id.img_lock)
+    ImageView mLockView;
+    @BindView(R.id.img_play)
+    ImageView mPlayView;
+    @BindView(R.id.img_fullscreen)
+    ImageView mFullscreenView;
+    @BindView(R.id.text_play_time)
+    TextView mPlayTimeView;
+    @BindView(R.id.text_duration_time)
+    TextView mDurationTimeView;
+    @BindView(R.id.progress_bar_play)
+    PlayProgressBar mProgressBar;
+    @BindView(R.id.seek_bar_play)
+    PlaySeekBar mSeekBar;
 
     // 控制界面是否显示
     private boolean isShowing = false;
@@ -107,35 +115,39 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
     /**
      * 控制界面点击事件
      */
-    @OnClick({ R.id.img_back, R.id.img_lock, R.id.img_play, R.id.img_fullscreen })
+    @OnClick({R.id.img_back, R.id.img_lock, R.id.img_play, R.id.img_fullscreen})
     public void onClick(View view) {
         switch (view.getId()) {
-        case R.id.img_back:
-            onBack();
-            break;
-        case R.id.img_lock:
-            onLock();
-            break;
-        case R.id.img_play:
-            onPlay();
-            break;
-        case R.id.img_fullscreen:
-            onFullscreen();
-            break;
+            case R.id.img_back:
+                onBack(true);
+                break;
+            case R.id.img_lock:
+                onLock();
+                break;
+            case R.id.img_play:
+                onPlay();
+                break;
+            case R.id.img_fullscreen:
+                onFullscreen();
+                break;
         }
     }
 
     /**
      * 处理返回按钮事件
      */
-    private void onBack() {
+    private boolean onBack(boolean callbackUI) {
         if (isLock) {
-            return;
+            return true;
         }
         if (isFullscreen) {
             exitFullscreen();
+            return true;
         }
-        VApp.scanForActivity(mContext).onBackPressed();
+        if (callbackUI) {
+            VApp.scanForActivity(mContext).onBackPressed();
+        }
+        return false;
     }
 
     /**
@@ -168,13 +180,13 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
     }
 
     /**
-     * 处理全屏事件
+     * 旋转 UI
      */
-    private void onFullscreen() {
-        if (isFullscreen) {
-            exitFullscreen();
+    public void onFullscreen() {
+        if (isFullscreen()) {
+            ((VMActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         } else {
-            enterFullscreen();
+            ((VMActivity) mContext).setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         }
     }
 
@@ -189,8 +201,7 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
         }
 
         VApp.scanForActivity(mContext)
-            .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        ViewGroup contentView = VApp.scanForActivity(mContext).findViewById(android.R.id.content);
+                .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         isFullscreen = true;
     }
 
@@ -204,10 +215,8 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
     public boolean exitFullscreen() {
         if (isFullscreen) {
             VApp.scanForActivity(mContext)
-                .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    .setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 
-            ViewGroup contentView = VApp.scanForActivity(mContext)
-                .findViewById(android.R.id.content);
             isFullscreen = false;
             return true;
         }
@@ -272,11 +281,19 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
         return isShowing;
     }
 
+    public boolean isLock() {
+        return isLock;
+    }
+
+    public boolean isFullscreen() {
+        return isFullscreen;
+    }
+
     /**
      * 是否拦截返回
      */
     public boolean interceptBack() {
-        return isLock || isFullscreen;
+        return onBack(false);
     }
 
     @Override
@@ -289,17 +306,18 @@ public class CustomVideoController extends FrameLayout implements IMediaControll
         mAnchorView = view;
     }
 
-    @SuppressLint("HandlerLeak") private Handler mHandler = new Handler() {
+    @SuppressLint("HandlerLeak")
+    private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             long pos;
             switch (msg.what) {
-            case CTRL_HIDE:
-                hide();
-                break;
-            case CTRL_SHOW:
-                show();
-                break;
+                case CTRL_HIDE:
+                    hide();
+                    break;
+                case CTRL_SHOW:
+                    show();
+                    break;
             }
         }
     };

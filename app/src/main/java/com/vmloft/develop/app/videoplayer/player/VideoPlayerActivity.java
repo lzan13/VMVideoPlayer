@@ -1,12 +1,14 @@
 package com.vmloft.develop.app.videoplayer.player;
 
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
 import com.vmloft.develop.app.videoplayer.R;
 import com.vmloft.develop.app.videoplayer.bean.VideoDetailBean;
@@ -16,12 +18,17 @@ import com.vmloft.develop.app.videoplayer.network.NetHelper;
 import com.vmloft.develop.library.tools.VMActivity;
 import com.vmloft.develop.library.tools.utils.VMLog;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 /**
  * Create by lzan13 on 2018/8/24
  */
 public class VideoPlayerActivity extends VMActivity {
 
-    private View playerContainer;
+    @BindView(R.id.fragment_video_container)
+    FrameLayout playerContainer;
     private VideoPlayerFragment videoPlayerFragment;
 
     private String videoId;
@@ -31,17 +38,18 @@ public class VideoPlayerActivity extends VMActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_video_player);
+
+        ButterKnife.bind(activity);
+
         init();
     }
 
     private void init() {
-        playerContainer = findViewById(R.id.fragment_video_container);
-
         videoId = getIntent().getStringExtra(VConstant.KEY_VIDEO_ID);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-            .getMetrics(displayMetrics);
+                .getMetrics(displayMetrics);
         int screenWidth = displayMetrics.widthPixels;
         int playerHeight = screenWidth * 720 / 1280;
         playerContainer.getLayoutParams().height = playerHeight;
@@ -77,25 +85,9 @@ public class VideoPlayerActivity extends VMActivity {
         }
         videoPlayerFragment = VideoPlayerFragment.newInstance(videoDetailBean);
         transaction.replace(R.id.fragment_video_container, videoPlayerFragment)
-            .commitAllowingStateLoss();
+                .commitAllowingStateLoss();
     }
 
-    //设置
-    @Override
-    public void onConfigurationChanged(Configuration newConfig) {
-        super.onConfigurationChanged(newConfig);
-        //int type = newConfig.orientation;
-        //if (type == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
-        //    //横屏
-        //    setContentView(R.layout.activity_swcamera_streaming);
-        //} else if (type == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
-        //    //竖屏
-        //    setContentView(R.layout.activity_swcamera_streaming);
-        //}
-        //Log.i("jinwei", "newConfig" + newConfig);
-    }
-    //重新setContentView这种方法可以达到横屏切换不重启，
-    //布局可以刷新，但是会重新设置view，其他数据不会被销毁。
 
     @Override
     public void onBackPressed() {
@@ -103,5 +95,39 @@ public class VideoPlayerActivity extends VMActivity {
             return;
         }
         super.onBackPressed();
+    }
+
+    @OnClick({R.id.btn_rotate})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn_rotate:
+                rotateUI();
+                break;
+        }
+    }
+
+
+    /**
+     * 旋转 UI
+     */
+    private void rotateUI() {
+        //        videoPlayerFragment.mVideoController.onFullscreen();
+        if (videoPlayerFragment.mVideoController.isFullscreen()) {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        } else {
+            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        }
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
+            VMLog.i("屏幕方向变化，当前为竖屏模式");
+        } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            VMLog.i("屏幕方向变化，当前为横屏模式");
+        } else {
+            VMLog.i("屏幕方向变化，不知道当前什么模式");
+        }
     }
 }

@@ -27,4 +27,12 @@
         app:layout_constraintTop_toBottomOf="@+id/fragment_video_container"
         />
 
+    <Button
+        android:id="@+id/btn_rotate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/vm_margin_large"
+        android:text="旋转"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 </android.support.constraint.ConstraintLayout>
