@@ -14,7 +14,7 @@ import com.vmloft.develop.library.tools.utils.VMDimen;
  * Created by chalilayang on 2016/12/13.
  */
 
-public class PlayProgressBar extends View {
+public class CustomProgressBar extends View {
 
     private static final String TAG = "PlayProgressBar";
     public static final int MAX = 10000;
@@ -34,15 +34,15 @@ public class PlayProgressBar extends View {
     private Rect barShadowRect;
     private Rect barBufferRect;
 
-    public PlayProgressBar(Context context) {
+    public CustomProgressBar(Context context) {
         this(context, null);
     }
 
-    public PlayProgressBar(Context context, AttributeSet attrs) {
+    public CustomProgressBar(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
     }
 
-    public PlayProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
+    public CustomProgressBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         setFocusable(false);
         setWillNotDraw(false);

@@ -3,19 +3,30 @@ package com.vmloft.develop.app.videoplayer.player;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
+import android.media.AudioManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.FragmentTransaction;
 import android.util.DisplayMetrics;
+import android.view.Display;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 
 import com.vmloft.develop.app.videoplayer.R;
 import com.vmloft.develop.app.videoplayer.bean.VideoDetailBean;
 import com.vmloft.develop.app.videoplayer.common.VCallback;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.app.videoplayer.network.NetHelper;
+import com.vmloft.develop.app.videoplayer.widget.CustomProgressBar;
 import com.vmloft.develop.library.tools.VMActivity;
+import com.vmloft.develop.library.tools.utils.VMDimen;
 import com.vmloft.develop.library.tools.utils.VMLog;
 
 import butterknife.BindView;
@@ -27,11 +38,17 @@ import butterknife.OnClick;
  */
 public class VideoPlayerActivity extends VMActivity {
 
-    @BindView(R.id.fragment_video_container) FrameLayout playerContainer;
+    @BindView(R.id.fragment_video_container)
+    FrameLayout playerContainer;
+
     private VideoPlayerFragment videoPlayerFragment;
 
     private String videoId;
     private VideoDetailBean videoDetailBean;
+
+    private int mScreenWidth = 0;
+    private int mScreenHeight = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,14 +63,9 @@ public class VideoPlayerActivity extends VMActivity {
     private void init() {
         videoId = getIntent().getStringExtra(VConstant.KEY_VIDEO_ID);
 
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-            .getMetrics(displayMetrics);
-        int screenWidth = displayMetrics.widthPixels;
-        int playerHeight = screenWidth * 720 / 1280;
-        playerContainer.getLayoutParams().height = playerHeight;
-
+        changeLayoutParam();
         requestVideoData();
+
     }
 
     private void requestVideoData() {
@@ -67,12 +79,12 @@ public class VideoPlayerActivity extends VMActivity {
                         initPlayerFragment();
                     }
                 });
-                VMLog.i("请求成功 %s", videoDetailBean.toString());
+                VMLog.i("请求视频详情成功 %s", videoDetailBean.toString());
             }
 
             @Override
             public void onError(int code, String desc) {
-                VMLog.e("请求失败: %d, %s", code, desc);
+                VMLog.e("请求视频详情失败: %d, %s", code, desc);
             }
         });
     }
@@ -84,7 +96,7 @@ public class VideoPlayerActivity extends VMActivity {
         }
         videoPlayerFragment = VideoPlayerFragment.newInstance(videoDetailBean);
         transaction.replace(R.id.fragment_video_container, videoPlayerFragment)
-            .commitAllowingStateLoss();
+                .commitAllowingStateLoss();
     }
 
     @Override
@@ -96,12 +108,8 @@ public class VideoPlayerActivity extends VMActivity {
     }
 
     private void changeLayoutParam() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay()
-            .getMetrics(displayMetrics);
-        int screenWidth = displayMetrics.widthPixels;
-        int playerHeight = screenWidth * 720 / 1280;
-        playerContainer.getLayoutParams().height = playerHeight;
+        checkScreenSize();
+        playerContainer.getLayoutParams().height = mScreenWidth * 720 / 1280;
     }
 
     /**
@@ -127,5 +135,16 @@ public class VideoPlayerActivity extends VMActivity {
         } else {
             VMLog.i("屏幕方向变化，不知道当前什么模式");
         }
+    }
+
+    /**
+     * 检查计算屏幕大小
+     */
+    private void checkScreenSize() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager wm = (WindowManager) getSystemService(Context.WINDOW_SERVICE);
+        wm.getDefaultDisplay().getMetrics(displayMetrics);
+        mScreenWidth = displayMetrics.widthPixels;
+        mScreenHeight = displayMetrics.heightPixels;
     }
 }
