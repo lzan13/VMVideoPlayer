@@ -37,16 +37,11 @@ public class VideoPlayerFragment extends Fragment {
     private static final String TAG = "VideoPlayerFragment";
     private VMActivity mActivity;
 
-    @BindView(R.id.view_video_player)
-    PLVideoTextureView mVideoPlayView;
-    @BindView(R.id.layout_loading)
-    LinearLayout mLoadingLayout;
-    @BindView(R.id.text_load)
-    TextView mLoadView;
-    @BindView(R.id.img_cover)
-    ImageView mCoverView;
-    @BindView(R.id.custom_video_controller)
-    CustomController mController;
+    @BindView(R.id.view_video_player) PLVideoTextureView mVideoPlayView;
+    @BindView(R.id.layout_loading) LinearLayout mLoadingLayout;
+    @BindView(R.id.text_load) TextView mLoadView;
+    @BindView(R.id.img_cover) ImageView mCoverView;
+    @BindView(R.id.custom_video_controller) CustomController mController;
 
     private VideoDetailBean videoDetailBean;
 
@@ -86,7 +81,6 @@ public class VideoPlayerFragment extends Fragment {
         ButterKnife.bind(this, getView());
 
         initPLDroidPlayer();
-
     }
 
     /**
@@ -101,7 +95,7 @@ public class VideoPlayerFragment extends Fragment {
         // codec=AVOptions.MEDIA_CODEC_SW_DECODE, 软解
         // codec=AVOptions.MEDIA_CODEC_AUTO, 硬解优先，失败后自动切换到软解
         // 默认值是：MEDIA_CODEC_SW_DECODE
-        int codec = AVOptions.MEDIA_CODEC_AUTO; // 解码方式:
+        int codec = AVOptions.MEDIA_CODEC_SW_DECODE; // 解码方式:
         options.setInteger(AVOptions.KEY_MEDIACODEC, codec);
 
         // 设置偏好的视频格式，设置后会加快对应格式视频流的打开速度，但播放其他格式会出错
@@ -140,6 +134,7 @@ public class VideoPlayerFragment extends Fragment {
                 }
             }
         });
+        mController.setActivity(mActivity);
         mController.setTitle(videoDetailBean.getTitle());
 
         VImageLoader.loadImage(mActivity, mCoverView, videoDetailBean.getPic_url(), R.drawable.img_placeholder);
@@ -171,63 +166,62 @@ public class VideoPlayerFragment extends Fragment {
         public void onInfo(int what, int extra) {
             Log.i(TAG, "OnInfo, what = " + what + ", extra = " + extra);
             switch (what) {
-                case PLOnInfoListener.MEDIA_INFO_BUFFERING_START:
-                    mLoadView.setText("正在准备...");
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_BUFFERING_END:
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_VIDEO_RENDERING_START:
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_AUDIO_RENDERING_START:
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_VIDEO_FRAME_RENDERING:
-                    Log.i(TAG, "video frame rendering, ts = " + extra);
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_AUDIO_FRAME_RENDERING:
-                    Log.i(TAG, "audio frame rendering, ts = " + extra);
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_VIDEO_GOP_TIME:
-                    Log.i(TAG, "Gop Time: " + extra);
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_SWITCHING_SW_DECODE:
-                    Log.i(TAG, "Hardware decoding failure, switching software decoding!");
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_METADATA:
-                    Log.i(TAG, mVideoPlayView.getMetadata().toString());
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_VIDEO_BITRATE:
-                case PLOnInfoListener.MEDIA_INFO_VIDEO_FPS:
-                    //updateStatInfo();
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_CONNECTED:
-                    Log.i(TAG, "Connected !");
-                    break;
-                case PLOnInfoListener.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
-                    Log.i(TAG, "Rotation changed: " + extra);
-                default:
-                    break;
+            case PLOnInfoListener.MEDIA_INFO_BUFFERING_START:
+                mLoadView.setText("正在准备...");
+                break;
+            case PLOnInfoListener.MEDIA_INFO_BUFFERING_END:
+                break;
+            case PLOnInfoListener.MEDIA_INFO_VIDEO_RENDERING_START:
+                break;
+            case PLOnInfoListener.MEDIA_INFO_AUDIO_RENDERING_START:
+                break;
+            case PLOnInfoListener.MEDIA_INFO_VIDEO_FRAME_RENDERING:
+                Log.i(TAG, "video frame rendering, ts = " + extra);
+                break;
+            case PLOnInfoListener.MEDIA_INFO_AUDIO_FRAME_RENDERING:
+                Log.i(TAG, "audio frame rendering, ts = " + extra);
+                break;
+            case PLOnInfoListener.MEDIA_INFO_VIDEO_GOP_TIME:
+                Log.i(TAG, "Gop Time: " + extra);
+                break;
+            case PLOnInfoListener.MEDIA_INFO_SWITCHING_SW_DECODE:
+                Log.i(TAG, "Hardware decoding failure, switching software decoding!");
+                break;
+            case PLOnInfoListener.MEDIA_INFO_METADATA:
+                Log.i(TAG, mVideoPlayView.getMetadata().toString());
+                break;
+            case PLOnInfoListener.MEDIA_INFO_VIDEO_BITRATE:
+            case PLOnInfoListener.MEDIA_INFO_VIDEO_FPS:
+                //updateStatInfo();
+                break;
+            case PLOnInfoListener.MEDIA_INFO_CONNECTED:
+                Log.i(TAG, "Connected !");
+                break;
+            case PLOnInfoListener.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
+                Log.i(TAG, "Rotation changed: " + extra);
+            default:
+                break;
             }
         }
     };
-
 
     private PLOnErrorListener mOnErrorListener = new PLOnErrorListener() {
         @Override
         public boolean onError(int errorCode) {
             Log.e(TAG, "Error happened, errorCode = " + errorCode);
             switch (errorCode) {
-                case PLOnErrorListener.ERROR_CODE_IO_ERROR:
-                    /**
-                     * SDK will do reconnecting automatically
-                     */
-                    Log.e(TAG, "IO Error!");
-                    return false;
-                case PLOnErrorListener.ERROR_CODE_OPEN_FAILED:
-                    break;
-                case PLOnErrorListener.ERROR_CODE_SEEK_FAILED:
-                    break;
-                default:
-                    break;
+            case PLOnErrorListener.ERROR_CODE_IO_ERROR:
+                /**
+                 * SDK will do reconnecting automatically
+                 */
+                Log.e(TAG, "IO Error!");
+                return false;
+            case PLOnErrorListener.ERROR_CODE_OPEN_FAILED:
+                break;
+            case PLOnErrorListener.ERROR_CODE_SEEK_FAILED:
+                break;
+            default:
+                break;
             }
             return true;
         }

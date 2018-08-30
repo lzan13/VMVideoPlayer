@@ -54,35 +54,25 @@ public class CustomController extends FrameLayout implements IMediaController {
     public static final int ACTION_FULLSCREEN = 0x04;
     // 滑动阀值
     private static final int THRESHOLD = 20;
+    public static final int MAX_SEEK_DURATION = 90 * 1000;
 
     // UI 控件
     private View mAnchorView;
-    @BindView(R.id.layout_controller_container)
-    View mRootView;
-    @BindView(R.id.img_back)
-    ImageView mBackView;
-    @BindView(R.id.text_title)
-    TextView mTitleView;
-    @BindView(R.id.img_lock)
-    ImageView mLockView;
-    @BindView(R.id.img_play)
-    ImageView mPlayView;
-    @BindView(R.id.img_fullscreen)
-    ImageView mFullscreenView;
-    @BindView(R.id.text_play_time)
-    TextView mPlayTimeView;
-    @BindView(R.id.text_duration_time)
-    TextView mDurationTimeView;
-    @BindView(R.id.progress_bar_play)
-    CustomProgressBar mProgressBar;
-    @BindView(R.id.seek_bar_play)
-    SeekBar mSeekBar;
-    @BindView(R.id.layout_ctrl_volume_brightness)
-    RelativeLayout mCtrlVolumeBrightnessLayout;
-    @BindView(R.id.img_ctrl_volume_brightness)
-    ImageView mCtrlVolumeBrightnessView;
-    @BindView(R.id.progress_ctrl_volume_brightness)
-    ProgressBar mCtrlVolumeBrightnessProgressBar;
+    @BindView(R.id.layout_controller_container) View mRootView;
+    @BindView(R.id.img_back) ImageView mBackView;
+    @BindView(R.id.text_title) TextView mTitleView;
+    @BindView(R.id.img_lock) ImageView mLockView;
+    @BindView(R.id.img_play) ImageView mPlayView;
+    @BindView(R.id.img_fullscreen) ImageView mFullscreenView;
+    @BindView(R.id.text_play_time) TextView mPlayTimeView;
+    @BindView(R.id.text_duration_time) TextView mDurationTimeView;
+    @BindView(R.id.progress_bar_play) CustomProgressBar mProgressBar;
+    @BindView(R.id.seek_bar_play) SeekBar mSeekBar;
+    @BindView(R.id.layout_ctrl_volume_brightness) RelativeLayout mCtrlVolumeBrightnessLayout;
+    @BindView(R.id.img_ctrl_volume_brightness) ImageView mCtrlVolumeBrightnessView;
+    @BindView(R.id.progress_ctrl_volume_brightness) ProgressBar mCtrlVolumeBrightnessProgressBar;
+    @BindView(R.id.layout_seek_tip) RelativeLayout mSeekTipLayout;
+    @BindView(R.id.text_seek_tip) TextView mSeekTipView;
 
     private VMActivity mActivity;
     private Context mContext;
@@ -97,7 +87,9 @@ public class CustomController extends FrameLayout implements IMediaController {
 
     private int mMaxVolume = 0;
     private int mCurrVolume = -1;
-    private float mCurrBrightness = -1;
+    private int mCurrBrightness = -1;
+    private long mCurrPosition = 0l;
+    private long mNewPosition = 0l;
 
     private boolean isNeedChangePosition = false;
     private boolean isNeedChangeVolume = false;
@@ -110,7 +102,6 @@ public class CustomController extends FrameLayout implements IMediaController {
     private boolean isLock = false;
     private boolean isFullscreen = false;
     private boolean isDragging = false;
-    private boolean isInstantSeeking = true;
 
     // 视频控制界面显示超时时间
     private int mDefaultTimeout = 5000;
@@ -124,6 +115,13 @@ public class CustomController extends FrameLayout implements IMediaController {
     public CustomController(Context context, AttributeSet attrs) {
         super(context, attrs);
         init(context);
+    }
+
+    /**
+     * 设置当前控制界面所依附的 activity
+     */
+    public void setActivity(VMActivity activity) {
+        mActivity = activity;
     }
 
     /**
@@ -157,21 +155,21 @@ public class CustomController extends FrameLayout implements IMediaController {
     /**
      * 控制界面点击事件
      */
-    @OnClick({R.id.img_back, R.id.img_lock, R.id.img_play, R.id.img_fullscreen})
+    @OnClick({ R.id.img_back, R.id.img_lock, R.id.img_play, R.id.img_fullscreen })
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.img_back:
-                onBack(true);
-                break;
-            case R.id.img_lock:
-                onLock();
-                break;
-            case R.id.img_play:
-                onPlay();
-                break;
-            case R.id.img_fullscreen:
-                onFullscreen();
-                break;
+        case R.id.img_back:
+            onBack(true);
+            break;
+        case R.id.img_lock:
+            onLock();
+            break;
+        case R.id.img_play:
+            onPlay();
+            break;
+        case R.id.img_fullscreen:
+            onFullscreen();
+            break;
         }
     }
 
@@ -340,7 +338,7 @@ public class CustomController extends FrameLayout implements IMediaController {
 
     @Override
     public void hide() {
-        if (isShowing) {
+        if (isShowing && !isDragging) {
             mRootView.setVisibility(GONE);
             mLockView.setVisibility(GONE);
             mProgressBar.setVisibility(VISIBLE);
@@ -376,7 +374,6 @@ public class CustomController extends FrameLayout implements IMediaController {
     public void setAnchorView(View view) {
         mAnchorView = view;
     }
-
 
     /**
      * 设置拖动条更新监听器
@@ -415,7 +412,6 @@ public class CustomController extends FrameLayout implements IMediaController {
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 // 监听用户结束拖动进度条的时候
-                isDragging = false;
                 int position = seekBar.getProgress();
                 int playProgress = 0;
                 if (mPlayerControl != null) {
@@ -427,7 +423,7 @@ public class CustomController extends FrameLayout implements IMediaController {
                 if (mPlayTimeView != null) {
                     mPlayTimeView.setText(generateTime(playProgress));
                 }
-
+                isDragging = false;
             }
         });
     }
@@ -447,78 +443,106 @@ public class CustomController extends FrameLayout implements IMediaController {
                 float x = event.getX();
                 float y = event.getY();
                 switch (event.getAction()) {
-                    case MotionEvent.ACTION_DOWN:
-                        mDownX = x;
-                        mDownY = y;
-                        isNeedChangePosition = false;
-                        isNeedChangeVolume = false;
-                        isNeedChangeBrightness = false;
-                        break;
-                    case MotionEvent.ACTION_MOVE:
-                        float deltaX = x - mDownX;
-                        float deltaY = y - mDownY;
-                        float absDeltaX = Math.abs(deltaX);
-                        float absDeltaY = Math.abs(deltaY);
-                        if (!isNeedChangePosition && !isNeedChangeVolume && !isNeedChangeBrightness) {
-                            if (absDeltaX >= THRESHOLD) {
-                                isDragging = true;
-                                isNeedChangePosition = true;
-                            } else if (absDeltaY >= THRESHOLD) {
-                                if (mDownX < getWidth() * 0.5f) {
-                                    // 左侧改变亮度
-                                    isNeedChangeBrightness = true;
-                                    if (mActivity != null) {
-                                        float bright = -1;
-                                        try {
-                                            WindowManager.LayoutParams lp = mActivity.getWindow().getAttributes();
-                                            bright = lp.screenBrightness;
-                                        } catch (Exception ex) {
-                                            ex.printStackTrace();
-                                        }
-                                        if (bright > 0) {
-                                            mCurrBrightness = Math.min(255, (int) (255 * bright));
-                                        } else {
-                                            mCurrBrightness = VBrightness.getScreenBrightness(mActivity);
-                                        }
+                case MotionEvent.ACTION_DOWN:
+                    mDownX = x;
+                    mDownY = y;
+                    isNeedChangePosition = false;
+                    isNeedChangeVolume = false;
+                    isNeedChangeBrightness = false;
+                    break;
+                case MotionEvent.ACTION_MOVE:
+                    float deltaX = x - mDownX;
+                    float deltaY = y - mDownY;
+                    float absDeltaX = Math.abs(deltaX);
+                    float absDeltaY = Math.abs(deltaY);
+                    if (!isNeedChangePosition && !isNeedChangeVolume && !isNeedChangeBrightness) {
+                        if (absDeltaX >= THRESHOLD) {
+                            isDragging = true;
+                            isNeedChangePosition = true;
+                            mCurrPosition = mPlayerControl.getCurrentPosition();
+                        } else if (absDeltaY >= THRESHOLD) {
+                            if (mDownX < getWidth() * 0.5f) {
+                                // 左侧改变亮度
+                                isNeedChangeBrightness = true;
+                                if (mActivity != null) {
+                                    float bright = -1;
+                                    try {
+                                        WindowManager.LayoutParams lp = mActivity.getWindow()
+                                            .getAttributes();
+                                        bright = lp.screenBrightness;
+                                    } catch (Exception ex) {
+                                        ex.printStackTrace();
                                     }
-                                } else {
-                                    // 右侧改变声音
-                                    isNeedChangeVolume = true;
-                                    mCurrVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+                                    if (bright > 0) {
+                                        mCurrBrightness = Math.min(255, (int) (255 * bright));
+                                    } else {
+                                        mCurrBrightness = VBrightness.getScreenBrightness(mContext);
+                                    }
                                 }
+                            } else {
+                                // 右侧改变声音
+                                isNeedChangeVolume = true;
+                                mCurrVolume = mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
                             }
                         }
-                        if (isNeedChangePosition) {
-                        }
-                        if (isNeedChangeBrightness) {
-                            float deltaBrightness = deltaY * 255.0f / getHeight();
-                            updateBrightness(deltaBrightness);
-                        }
-                        if (isNeedChangeVolume) {
-                            deltaY = -deltaY;
-                            float deltaVolume = (mMaxVolume * deltaY * 3 / getHeight());
-                            updateVolume(deltaVolume);
-                        }
-                        break;
-                    case MotionEvent.ACTION_CANCEL:
-                    case MotionEvent.ACTION_UP:
-                        isDragging = false;
-                        if (isNeedChangePosition) {
-                            return true;
-                        }
-                        if (isNeedChangeBrightness) {
-                            hideCtrlVolumeBrightness();
-                            return true;
-                        }
-                        if (isNeedChangeVolume) {
-                            hideCtrlVolumeBrightness();
-                            return true;
-                        }
-                        break;
+                    }
+                    if (isNeedChangePosition) {
+                        long duration = mPlayerControl.getDuration();
+                        long toPosition = (long) (mCurrPosition + MAX_SEEK_DURATION * deltaX * 1.0f / getWidth());
+                        mNewPosition = Math.max(0, Math.min(duration, toPosition));
+                        updatePosition(mNewPosition);
+                    }
+                    if (isNeedChangeBrightness) {
+                        deltaY = -deltaY;
+                        int deltaBrightness = (int) (deltaY * 255.0 / getHeight());
+                        updateBrightness(deltaBrightness);
+                    }
+                    if (isNeedChangeVolume) {
+                        deltaY = -deltaY;
+                        float deltaVolume = (mMaxVolume * deltaY * 3 / getHeight());
+                        updateVolume(deltaVolume);
+                    }
+                    break;
+                case MotionEvent.ACTION_CANCEL:
+                case MotionEvent.ACTION_UP:
+                    isDragging = false;
+                    if (isNeedChangePosition) {
+                        mPlayerControl.seekTo(mNewPosition);
+                        hideSeekTipLayout();
+                        return true;
+                    }
+                    if (isNeedChangeBrightness) {
+                        hideCtrlVolumeBrightness();
+                        return true;
+                    }
+                    if (isNeedChangeVolume) {
+                        hideCtrlVolumeBrightness();
+                        return true;
+                    }
+                    if (isShowing) {
+                        hide();
+                    } else {
+                        show();
+                    }
+                    break;
                 }
                 return true;
             }
         });
+    }
+
+    /**
+     * 滑动快进快退
+     */
+    private void updatePosition(long position) {
+        mSeekTipLayout.setVisibility(VISIBLE);
+        String pos = generateTime(position);
+        String dur = generateTime(mDuration);
+        mSeekTipView.setText(pos + "/" + dur);
+    }
+
+    private void hideSeekTipLayout() {
+        mSeekTipLayout.setVisibility(INVISIBLE);
     }
 
     /**
@@ -532,24 +556,24 @@ public class CustomController extends FrameLayout implements IMediaController {
         float newVolume = mCurrVolume + deltaVolume;
         newVolume = Math.max(0, Math.min(mMaxVolume, newVolume));
         mAudioManager.setStreamVolume(AudioManager.STREAM_MUSIC, (int) newVolume, 0);
-        int newVolumeProgress = (int) (10000 * newVolume / mMaxVolume);
+        int newVolumeProgress = (int) (100 * newVolume / mMaxVolume);
         mCtrlVolumeBrightnessProgressBar.setProgress(newVolumeProgress);
     }
 
     /**
      * 滑动改变亮度
      */
-    private void updateBrightness(float deltaBrightness) {
-        VMLog.i("CustomController updateBrightness %f", deltaBrightness);
+    private void updateBrightness(int deltaBrightness) {
+        VMLog.i("CustomController updateBrightness %d", deltaBrightness);
         mCtrlVolumeBrightnessLayout.setVisibility(VISIBLE);
         mCtrlVolumeBrightnessView.setImageResource(R.drawable.ic_brightness);
-        float newBrightness = mCurrBrightness + deltaBrightness;
-        Log.i(TAG, "onTouch: " + newBrightness + " " + deltaBrightness);
+
+        int newBrightness = mCurrBrightness + deltaBrightness;
         newBrightness = Math.max(0, Math.min(newBrightness, 255));
         if (mActivity != null) {
             VBrightness.setBrightness(mActivity, newBrightness);
             float newBrightnessPercentage = newBrightness / 255.0f;
-            int newBrightnessProgress = (int) (10000 * newBrightnessPercentage);
+            int newBrightnessProgress = (int) (100f * newBrightnessPercentage);
             mCtrlVolumeBrightnessProgressBar.setProgress(newBrightnessProgress);
         }
     }
@@ -573,21 +597,20 @@ public class CustomController extends FrameLayout implements IMediaController {
         void onAction(int action);
     }
 
-    @SuppressLint("HandlerLeak")
-    private Handler mHandler = new Handler() {
+    @SuppressLint("HandlerLeak") private Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
-                case CTRL_HIDE:
-                    hide();
-                    break;
-                case CTRL_SHOW:
-                    show();
-                    break;
-                case CTRL_PROGRESS:
-                    mHandler.removeMessages(CTRL_PROGRESS);
-                    updateProgress();
-                    break;
+            case CTRL_HIDE:
+                hide();
+                break;
+            case CTRL_SHOW:
+                show();
+                break;
+            case CTRL_PROGRESS:
+                mHandler.removeMessages(CTRL_PROGRESS);
+                updateProgress();
+                break;
             }
         }
     };

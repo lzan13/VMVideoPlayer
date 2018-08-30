@@ -10,12 +10,12 @@
 
     <!--自定义拖动条样式-->
     <style name="CustomSeekBarStyle">
-        <item name="android:maxHeight">@dimen/vm_dimen_8</item>
+        <item name="android:maxHeight">@dimen/vm_dimen_4</item>
         <item name="android:indeterminateOnly">false</item>
         <item name="android:indeterminateDrawable">@color/colorAccent</item>
         <item name="android:progressDrawable">@drawable/seek_bar_background</item>
         <item name="android:minHeight">@dimen/vm_dimen_2</item>
-        <item name="android:thumb">@mipmap/ic_launcher_round</item>
+        <item name="android:thumb">@drawable/ic_circle</item>
     </style>
     <!--自定义水平进度条样式-->
     <style name="CustomProgressBarStyle" parent="Base.Widget.AppCompat.ProgressBar.Horizontal">

@@ -9,6 +9,9 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <!--唤醒锁-->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- 写settings权限 全屏播放中亮度调节时用到，修改字体大小也用到 -->
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+
 
     <application
         android:name=".common.VApp"
