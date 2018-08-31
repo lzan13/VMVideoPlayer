@@ -35,6 +35,10 @@
         <activity
             android:name=".player.VideoPlayerActivity"
             android:configChanges="orientation|keyboardHidden|screenSize" />
+
+        <meta-data
+            android:name="android.max_aspect"
+            android:value="2.4" />
     </application>
 
 </manifest>

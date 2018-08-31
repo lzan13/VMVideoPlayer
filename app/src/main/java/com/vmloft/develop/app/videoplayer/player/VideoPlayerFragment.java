@@ -18,6 +18,7 @@ import android.widget.TextView;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 import com.pili.pldroid.player.AVOptions;
 import com.pili.pldroid.player.PLOnBufferingUpdateListener;
@@ -31,19 +32,27 @@ import com.vmloft.develop.app.videoplayer.bean.VideoDetailBean;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.app.videoplayer.imageloader.VImageLoader;
 import com.vmloft.develop.library.tools.VMActivity;
+import com.vmloft.develop.library.tools.widget.VMToast;
 
 public class VideoPlayerFragment extends Fragment {
 
     private static final String TAG = "VideoPlayerFragment";
     private VMActivity mActivity;
 
-    @BindView(R.id.view_video_player) PLVideoTextureView mVideoPlayView;
-    @BindView(R.id.layout_loading) LinearLayout mLoadingLayout;
-    @BindView(R.id.text_load) TextView mLoadView;
-    @BindView(R.id.img_cover) ImageView mCoverView;
-    @BindView(R.id.custom_video_controller) CustomController mController;
+    @BindView(R.id.view_video_player)
+    PLVideoTextureView mVideoPlayView;
+    @BindView(R.id.layout_loading)
+    LinearLayout mLoadingLayout;
+    @BindView(R.id.text_load)
+    TextView mLoadView;
+    @BindView(R.id.img_cover)
+    ImageView mCoverView;
+    @BindView(R.id.custom_video_controller)
+    CustomController mController;
 
     private VideoDetailBean videoDetailBean;
+    // 设置视频缩放尺寸，默认为原始尺寸
+    private int mDisplayAspectRatio = PLVideoTextureView.ASPECT_RATIO_ORIGIN;
 
     public static VideoPlayerFragment newInstance(VideoDetailBean videoDetailBean) {
         VideoPlayerFragment fragment = new VideoPlayerFragment();
@@ -114,30 +123,49 @@ public class VideoPlayerFragment extends Fragment {
         mVideoPlayView.setBufferingIndicator(mLoadingLayout);
         // 设置封面控件
         mVideoPlayView.setCoverView(mCoverView);
-        // 设置视频播放的一些监听
-        mVideoPlayView.setOnInfoListener(mOnInfoListener);
-        mVideoPlayView.setOnVideoSizeChangedListener(mOnVideoSizeChangedListener);
-        mVideoPlayView.setOnBufferingUpdateListener(mOnBufferingUpdateListener);
-        mVideoPlayView.setOnCompletionListener(mOnCompletionListener);
-        mVideoPlayView.setOnErrorListener(mOnErrorListener);
+        // 画面预览模式，包括：原始尺寸、适应屏幕、全屏铺满、16:9、4:3
+        // ASPECT_RATIO_ORIGIN
+        // ASPECT_RATIO_FIT_PARENT
+        // ASPECT_RATIO_PAVED_PARENT
+        // ASPECT_RATIO_16_9
+        // ASPECT_RATIO_4_3
+        mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
 
         mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
         mVideoPlayView.setLooping(false);
 
         // 设置视频播放控制器
-        mVideoPlayView.setMediaController(mController);
-        mController.setOnCtrlActionListener(new CustomController.OnCtrlActionListener() {
-            @Override
-            public void onAction(int action) {
-                if (action == CustomController.ACTION_FULLSCREEN) {
-                    ((VideoPlayerActivity) getActivity()).rotateUI();
-                }
-            }
-        });
         mController.setActivity(mActivity);
         mController.setTitle(videoDetailBean.getTitle());
+        mController.initControllerListener(mVideoPlayView);
+        mVideoPlayView.setMediaController(mController);
 
         VImageLoader.loadImage(mActivity, mCoverView, videoDetailBean.getPic_url(), R.drawable.img_placeholder);
+    }
+
+    @OnClick(R.id.img_scale_ratio)
+    public void onClick() {
+        mDisplayAspectRatio = (mDisplayAspectRatio + 1) % 5;
+        mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
+        switch (mVideoPlayView.getDisplayAspectRatio()) {
+            case PLVideoTextureView.ASPECT_RATIO_ORIGIN:
+                VMToast.make("Origin mode").showDone();
+                break;
+            case PLVideoTextureView.ASPECT_RATIO_FIT_PARENT:
+                VMToast.make("Fit parent !").showDone();
+                break;
+            case PLVideoTextureView.ASPECT_RATIO_PAVED_PARENT:
+                VMToast.make("Paved parent !").showDone();
+                break;
+            case PLVideoTextureView.ASPECT_RATIO_16_9:
+                VMToast.make("16 : 9 !").showDone();
+                break;
+            case PLVideoTextureView.ASPECT_RATIO_4_3:
+                VMToast.make("4 : 3 !").showDone();
+                break;
+            default:
+                break;
+        }
     }
 
     @Override
@@ -157,95 +185,4 @@ public class VideoPlayerFragment extends Fragment {
         super.onDestroy();
         mVideoPlayView.stopPlayback();
     }
-
-    /**
-     * 定义 PLDroidPLayer 的一些监听
-     */
-    private PLOnInfoListener mOnInfoListener = new PLOnInfoListener() {
-        @Override
-        public void onInfo(int what, int extra) {
-            Log.i(TAG, "OnInfo, what = " + what + ", extra = " + extra);
-            switch (what) {
-            case PLOnInfoListener.MEDIA_INFO_BUFFERING_START:
-                mLoadView.setText("正在准备...");
-                break;
-            case PLOnInfoListener.MEDIA_INFO_BUFFERING_END:
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_RENDERING_START:
-                break;
-            case PLOnInfoListener.MEDIA_INFO_AUDIO_RENDERING_START:
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_FRAME_RENDERING:
-                Log.i(TAG, "video frame rendering, ts = " + extra);
-                break;
-            case PLOnInfoListener.MEDIA_INFO_AUDIO_FRAME_RENDERING:
-                Log.i(TAG, "audio frame rendering, ts = " + extra);
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_GOP_TIME:
-                Log.i(TAG, "Gop Time: " + extra);
-                break;
-            case PLOnInfoListener.MEDIA_INFO_SWITCHING_SW_DECODE:
-                Log.i(TAG, "Hardware decoding failure, switching software decoding!");
-                break;
-            case PLOnInfoListener.MEDIA_INFO_METADATA:
-                Log.i(TAG, mVideoPlayView.getMetadata().toString());
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_BITRATE:
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_FPS:
-                //updateStatInfo();
-                break;
-            case PLOnInfoListener.MEDIA_INFO_CONNECTED:
-                Log.i(TAG, "Connected !");
-                break;
-            case PLOnInfoListener.MEDIA_INFO_VIDEO_ROTATION_CHANGED:
-                Log.i(TAG, "Rotation changed: " + extra);
-            default:
-                break;
-            }
-        }
-    };
-
-    private PLOnErrorListener mOnErrorListener = new PLOnErrorListener() {
-        @Override
-        public boolean onError(int errorCode) {
-            Log.e(TAG, "Error happened, errorCode = " + errorCode);
-            switch (errorCode) {
-            case PLOnErrorListener.ERROR_CODE_IO_ERROR:
-                /**
-                 * SDK will do reconnecting automatically
-                 */
-                Log.e(TAG, "IO Error!");
-                return false;
-            case PLOnErrorListener.ERROR_CODE_OPEN_FAILED:
-                break;
-            case PLOnErrorListener.ERROR_CODE_SEEK_FAILED:
-                break;
-            default:
-                break;
-            }
-            return true;
-        }
-    };
-
-    private PLOnCompletionListener mOnCompletionListener = new PLOnCompletionListener() {
-        @Override
-        public void onCompletion() {
-            Log.i(TAG, "Play Completed !");
-            //finish();
-        }
-    };
-
-    private PLOnBufferingUpdateListener mOnBufferingUpdateListener = new PLOnBufferingUpdateListener() {
-        @Override
-        public void onBufferingUpdate(int precent) {
-            Log.i(TAG, "onBufferingUpdate: " + precent);
-        }
-    };
-
-    private PLOnVideoSizeChangedListener mOnVideoSizeChangedListener = new PLOnVideoSizeChangedListener() {
-        @Override
-        public void onVideoSizeChanged(int width, int height) {
-            Log.i(TAG, "onVideoSizeChanged: width = " + width + ", height = " + height);
-        }
-    };
 }

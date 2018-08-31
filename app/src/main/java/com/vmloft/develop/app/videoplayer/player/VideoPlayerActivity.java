@@ -62,7 +62,6 @@ public class VideoPlayerActivity extends VMActivity {
 
     private void init() {
         videoId = getIntent().getStringExtra(VConstant.KEY_VIDEO_ID);
-
         changeLayoutParam();
         requestVideoData();
 
@@ -109,32 +108,34 @@ public class VideoPlayerActivity extends VMActivity {
 
     private void changeLayoutParam() {
         checkScreenSize();
-        playerContainer.getLayoutParams().height = mScreenWidth * 720 / 1280;
-    }
-
-    /**
-     * 旋转 UI
-     */
-    public void rotateUI() {
-        //        videoPlayerFragment.mController.onFullscreen();
-        if (videoPlayerFragment.mController.isFullscreen()) {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        float vRatio = (float) 720 / 1280;
+        float sRatio = (float) mScreenHeight / mScreenWidth;
+        if (vRatio > sRatio) {
+            // 如果视频比例比屏幕比例大，则需要视频高度充满屏幕，宽度计算
+            playerContainer.getLayoutParams().width = (int) (mScreenHeight / vRatio);
+            playerContainer.getLayoutParams().height = mScreenHeight;
         } else {
-            setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+            // 如果视频比例比屏幕比例小，则视频宽度充满屏幕，高度计算
+            playerContainer.getLayoutParams().width = mScreenWidth;
+            playerContainer.getLayoutParams().height = (int) (mScreenWidth * vRatio);
         }
     }
 
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        changeLayoutParam();
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             VMLog.i("屏幕方向变化，当前为竖屏模式");
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             VMLog.i("屏幕方向变化，当前为横屏模式");
+            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
             VMLog.i("屏幕方向变化，不知道当前什么模式");
         }
+        changeLayoutParam();
     }
 
     /**
@@ -146,5 +147,6 @@ public class VideoPlayerActivity extends VMActivity {
         wm.getDefaultDisplay().getMetrics(displayMetrics);
         mScreenWidth = displayMetrics.widthPixels;
         mScreenHeight = displayMetrics.heightPixels;
+        VMLog.i("-lz-检查屏幕大小 w:%d, h:%d", mScreenWidth, mScreenHeight);
     }
 }
