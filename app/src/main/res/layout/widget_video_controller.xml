@@ -60,6 +60,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             />
+        <!--截图按钮-->
+        <ImageView
+            android:id="@+id/img_screenshot"
+            android:layout_width="@dimen/vm_dimen_36"
+            android:layout_height="@dimen/vm_dimen_36"
+            android:layout_marginEnd="@dimen/vm_margin_large"
+            android:layout_marginStart="@dimen/vm_dimen_8"
+            android:src="@drawable/ic_photo_camera"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            />
         <!--全屏按钮-->
         <ImageView
             android:id="@+id/img_fullscreen"
@@ -162,8 +174,8 @@
             android:id="@+id/progress_ctrl_volume_brightness"
             android:layout_width="@dimen/vm_dimen_96"
             android:layout_height="@dimen/vm_dimen_4"
-            android:layout_margin="@dimen/vm_margin_normal"
             android:layout_below="@id/img_ctrl_volume_brightness"
+            android:layout_margin="@dimen/vm_margin_normal"
             style="@style/CustomProgressBarStyle"
             />
     </RelativeLayout>

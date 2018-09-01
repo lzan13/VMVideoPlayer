@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@color/vm_blue_12"
     android:layout_height="match_parent"
+    android:background="@color/vm_blue_12"
     >
 
     <FrameLayout
         android:id="@+id/fragment_video_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
         android:background="@color/vm_black"
         android:minHeight="@dimen/vm_dimen_128"
         />
@@ -20,10 +21,7 @@
         android:id="@+id/fragment_content_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_below="@+id/fragment_video_container"
         android:background="@color/vm_red_38"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/fragment_video_container"
         />
-</android.support.constraint.ConstraintLayout>
+</RelativeLayout>

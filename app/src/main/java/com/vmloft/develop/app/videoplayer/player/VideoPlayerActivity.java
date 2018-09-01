@@ -38,8 +38,7 @@ import butterknife.OnClick;
  */
 public class VideoPlayerActivity extends VMActivity {
 
-    @BindView(R.id.fragment_video_container)
-    FrameLayout playerContainer;
+    @BindView(R.id.fragment_video_container) FrameLayout playerContainer;
 
     private VideoPlayerFragment videoPlayerFragment;
 
@@ -48,7 +47,6 @@ public class VideoPlayerActivity extends VMActivity {
 
     private int mScreenWidth = 0;
     private int mScreenHeight = 0;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +62,6 @@ public class VideoPlayerActivity extends VMActivity {
         videoId = getIntent().getStringExtra(VConstant.KEY_VIDEO_ID);
         changeLayoutParam();
         requestVideoData();
-
     }
 
     private void requestVideoData() {
@@ -95,7 +92,7 @@ public class VideoPlayerActivity extends VMActivity {
         }
         videoPlayerFragment = VideoPlayerFragment.newInstance(videoDetailBean);
         transaction.replace(R.id.fragment_video_container, videoPlayerFragment)
-                .commitAllowingStateLoss();
+            .commitAllowingStateLoss();
     }
 
     @Override
@@ -110,14 +107,21 @@ public class VideoPlayerActivity extends VMActivity {
         checkScreenSize();
         float vRatio = (float) 720 / 1280;
         float sRatio = (float) mScreenHeight / mScreenWidth;
+        int playWidth = 0;
+        int playHeight = 0;
         if (vRatio > sRatio) {
             // 如果视频比例比屏幕比例大，则需要视频高度充满屏幕，宽度计算
-            playerContainer.getLayoutParams().width = (int) (mScreenHeight / vRatio);
-            playerContainer.getLayoutParams().height = mScreenHeight;
+            playWidth = (int) (mScreenHeight / vRatio);
+            playHeight = mScreenHeight;
         } else {
             // 如果视频比例比屏幕比例小，则视频宽度充满屏幕，高度计算
-            playerContainer.getLayoutParams().width = mScreenWidth;
-            playerContainer.getLayoutParams().height = (int) (mScreenWidth * vRatio);
+            playWidth = mScreenWidth;
+            playHeight = (int) (mScreenWidth * vRatio);
+        }
+
+        playerContainer.getLayoutParams().height = playHeight;
+        if (videoPlayerFragment != null) {
+            videoPlayerFragment.changeVideoViewSize(playWidth, playHeight);
         }
     }
 
@@ -126,12 +130,8 @@ public class VideoPlayerActivity extends VMActivity {
         super.onConfigurationChanged(newConfig);
         if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             VMLog.i("屏幕方向变化，当前为竖屏模式");
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
         } else if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
             VMLog.i("屏幕方向变化，当前为横屏模式");
-            getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
-                    WindowManager.LayoutParams.FLAG_FULLSCREEN);
         } else {
             VMLog.i("屏幕方向变化，不知道当前什么模式");
         }
@@ -147,6 +147,5 @@ public class VideoPlayerActivity extends VMActivity {
         wm.getDefaultDisplay().getMetrics(displayMetrics);
         mScreenWidth = displayMetrics.widthPixels;
         mScreenHeight = displayMetrics.heightPixels;
-        VMLog.i("-lz-检查屏幕大小 w:%d, h:%d", mScreenWidth, mScreenHeight);
     }
 }

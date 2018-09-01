@@ -24,14 +24,18 @@ import com.pili.pldroid.player.AVOptions;
 import com.pili.pldroid.player.PLOnBufferingUpdateListener;
 import com.pili.pldroid.player.PLOnCompletionListener;
 import com.pili.pldroid.player.PLOnErrorListener;
+import com.pili.pldroid.player.PLOnImageCapturedListener;
 import com.pili.pldroid.player.PLOnInfoListener;
+import com.pili.pldroid.player.PLOnVideoFrameListener;
 import com.pili.pldroid.player.PLOnVideoSizeChangedListener;
 import com.pili.pldroid.player.widget.PLVideoTextureView;
+import com.pili.pldroid.player.widget.PLVideoView;
 import com.vmloft.develop.app.videoplayer.R;
 import com.vmloft.develop.app.videoplayer.bean.VideoDetailBean;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
 import com.vmloft.develop.app.videoplayer.imageloader.VImageLoader;
 import com.vmloft.develop.library.tools.VMActivity;
+import com.vmloft.develop.library.tools.utils.VMLog;
 import com.vmloft.develop.library.tools.widget.VMToast;
 
 public class VideoPlayerFragment extends Fragment {
@@ -39,16 +43,11 @@ public class VideoPlayerFragment extends Fragment {
     private static final String TAG = "VideoPlayerFragment";
     private VMActivity mActivity;
 
-    @BindView(R.id.view_video_player)
-    PLVideoTextureView mVideoPlayView;
-    @BindView(R.id.layout_loading)
-    LinearLayout mLoadingLayout;
-    @BindView(R.id.text_load)
-    TextView mLoadView;
-    @BindView(R.id.img_cover)
-    ImageView mCoverView;
-    @BindView(R.id.custom_video_controller)
-    CustomController mController;
+    @BindView(R.id.view_video_player) PLVideoView mVideoPlayView;
+    @BindView(R.id.layout_loading) LinearLayout mLoadingLayout;
+    @BindView(R.id.text_load) TextView mLoadView;
+    @BindView(R.id.img_cover) ImageView mCoverView;
+    @BindView(R.id.custom_video_controller) CustomController mController;
 
     private VideoDetailBean videoDetailBean;
     // 设置视频缩放尺寸，默认为原始尺寸
@@ -96,51 +95,101 @@ public class VideoPlayerFragment extends Fragment {
      * 初始化视频播放配置
      */
     private void initPLDroidPlayer() {
+        //AVOptions options = new AVOptions();
+        //// 打开视频时单次 http 请求的超时时间，一次打开过程最多尝试五次 单位为 ms
+        //options.setInteger(AVOptions.KEY_PREPARE_TIMEOUT, 10 * 1000);
+        //// 解码方式
+        //// codec＝AVOptions.MEDIA_CODEC_HW_DECODE，硬解
+        //// codec=AVOptions.MEDIA_CODEC_SW_DECODE, 软解
+        //// codec=AVOptions.MEDIA_CODEC_AUTO, 硬解优先，失败后自动切换到软解
+        //// 默认值是：MEDIA_CODEC_SW_DECODE
+        //int codec = AVOptions.MEDIA_CODEC_SW_DECODE; // 解码方式:
+        //options.setInteger(AVOptions.KEY_MEDIACODEC, codec);
+        //
+        //// 设置偏好的视频格式，设置后会加快对应格式视频流的打开速度，但播放其他格式会出错
+        //// m3u8 = 1, mp4 = 2, flv = 3
+        ////options.setInteger(AVOptions.KEY_PREFER_FORMAT, 2);
+        //
+        //// 设置拖动模式，1 位精准模式，即会拖动到时间戳的那一秒；0 为普通模式，会拖动到时间戳最近的关键帧。默认为 0
+        //options.setInteger(AVOptions.KEY_SEEK_MODE, 0);
+        //options.setInteger(AVOptions.KEY_LIVE_STREAMING, 0);
+        //// 开启解码后的视频数据回调，默认值为 0，设置为 1 则开启
+        //options.setInteger(AVOptions.KEY_VIDEO_DATA_CALLBACK, 1);
+        //// 设置日志级别
+        //int logLevel = 2;
+        //options.setInteger(AVOptions.KEY_LOG_LEVEL, logLevel);
+        //// 设置视频播放控件配置项
+        //mVideoPlayView.setAVOptions(options);
+        //
+        //// 设置加载布局
+        //mVideoPlayView.setBufferingIndicator(mLoadingLayout);
+        //
+        //// 设置封面控件
+        //mVideoPlayView.setCoverView(mCoverView);
+        //
+        //// 画面预览模式，包括：原始尺寸、适应屏幕、全屏铺满、16:9、4:3
+        //// ASPECT_RATIO_ORIGIN
+        //// ASPECT_RATIO_FIT_PARENT
+        //// ASPECT_RATIO_PAVED_PARENT
+        //// ASPECT_RATIO_16_9
+        //// ASPECT_RATIO_4_3
+        ////mDisplayAspectRatio = PLVideoTextureView.ASPECT_RATIO_16_9;
+        ////mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
+        mController.initControllerListener(mVideoPlayView);
+        //mVideoPlayView.setOnVideoFrameListener(mOnVideoFrameListener);
+        //mVideoPlayView.setOnImageCapturedListener(mImageCapturedListener);
+        //// 设置视频播放控制器
+        //mController.setActivity(mActivity);
+        //mController.setTitle(videoDetailBean.getTitle());
+        //mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
+        //mVideoPlayView.setLooping(false);
+        //mVideoPlayView.setMediaController(mController);
+
+
+        mVideoPlayView.setBufferingIndicator(mLoadingLayout);
+
+        mVideoPlayView.setCoverView(mCoverView);
+
+        // 1 -> hw codec enable, 0 -> disable [recommended]
         AVOptions options = new AVOptions();
-        // 打开视频时单次 http 请求的超时时间，一次打开过程最多尝试五次 单位为 ms
+        // the unit of timeout is ms
         options.setInteger(AVOptions.KEY_PREPARE_TIMEOUT, 10 * 1000);
-        // 解码方式
-        // codec＝AVOptions.MEDIA_CODEC_HW_DECODE，硬解
-        // codec=AVOptions.MEDIA_CODEC_SW_DECODE, 软解
-        // codec=AVOptions.MEDIA_CODEC_AUTO, 硬解优先，失败后自动切换到软解
-        // 默认值是：MEDIA_CODEC_SW_DECODE
-        int codec = AVOptions.MEDIA_CODEC_SW_DECODE; // 解码方式:
+        // 1 -> hw codec enable, 0 -> disable [recommended]
+        int codec = AVOptions.MEDIA_CODEC_SW_DECODE;
         options.setInteger(AVOptions.KEY_MEDIACODEC, codec);
-
-        // 设置偏好的视频格式，设置后会加快对应格式视频流的打开速度，但播放其他格式会出错
-        // m3u8 = 1, mp4 = 2, flv = 3
-        options.setInteger(AVOptions.KEY_PREFER_FORMAT, 2);
-
-        // 设置拖动模式，1 位精准模式，即会拖动到时间戳的那一秒；0 为普通模式，会拖动到时间戳最近的关键帧。默认为 0
-        options.setInteger(AVOptions.KEY_SEEK_MODE, 1);
-
-        // 设置日志级别
-        int logLevel = 2;
-        options.setInteger(AVOptions.KEY_LOG_LEVEL, logLevel);
+        options.setInteger(AVOptions.KEY_LIVE_STREAMING, 0);
+        boolean disableLog = false;
+        //        options.setString(AVOptions.KEY_DNS_SERVER, "127.0.0.1");
+        options.setInteger(AVOptions.KEY_LOG_LEVEL, disableLog ? 5 : 0);
+        options.setInteger(AVOptions.KEY_VIDEO_DATA_CALLBACK, 1);
+        options.setInteger(AVOptions.KEY_AUDIO_DATA_CALLBACK, 0);
         mVideoPlayView.setAVOptions(options);
 
-        // 设置加载布局
-        mVideoPlayView.setBufferingIndicator(mLoadingLayout);
-        // 设置封面控件
-        mVideoPlayView.setCoverView(mCoverView);
-        // 画面预览模式，包括：原始尺寸、适应屏幕、全屏铺满、16:9、4:3
-        // ASPECT_RATIO_ORIGIN
-        // ASPECT_RATIO_FIT_PARENT
-        // ASPECT_RATIO_PAVED_PARENT
-        // ASPECT_RATIO_16_9
-        // ASPECT_RATIO_4_3
-        mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
+        // Set some listeners
+        //mVideoPlayView.setOnInfoListener(mOnInfoListener);
+        //mVideoPlayView.setOnVideoSizeChangedListener(mOnVideoSizeChangedListener);
+        //mVideoPlayView.setOnBufferingUpdateListener(mOnBufferingUpdateListener);
+        //mVideoPlayView.setOnCompletionListener(mOnCompletionListener);
+        //mVideoPlayView.setOnErrorListener(mOnErrorListener);
+        //mVideoPlayView.setOnVideoFrameListener(mOnVideoFrameListener);
+        //mVideoPlayView.setOnAudioFrameListener(mOnAudioFrameListener);
+        //mVideoPlayView.setOnImageCapturedListener(mImageCapturedListener);
 
         mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
         mVideoPlayView.setLooping(false);
 
-        // 设置视频播放控制器
-        mController.setActivity(mActivity);
-        mController.setTitle(videoDetailBean.getTitle());
-        mController.initControllerListener(mVideoPlayView);
+        // You can also use a custom `MediaController` widget
         mVideoPlayView.setMediaController(mController);
-
+        
         VImageLoader.loadImage(mActivity, mCoverView, videoDetailBean.getPic_url(), R.drawable.img_placeholder);
+    }
+
+    /**
+     * 改变视频控件大小
+     */
+    public void changeVideoViewSize(int width, int height) {
+        mVideoPlayView.getLayoutParams().width = width;
+        mVideoPlayView.getLayoutParams().height = height;
     }
 
     @OnClick(R.id.img_scale_ratio)
@@ -148,23 +197,23 @@ public class VideoPlayerFragment extends Fragment {
         mDisplayAspectRatio = (mDisplayAspectRatio + 1) % 5;
         mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
         switch (mVideoPlayView.getDisplayAspectRatio()) {
-            case PLVideoTextureView.ASPECT_RATIO_ORIGIN:
-                VMToast.make("Origin mode").showDone();
-                break;
-            case PLVideoTextureView.ASPECT_RATIO_FIT_PARENT:
-                VMToast.make("Fit parent !").showDone();
-                break;
-            case PLVideoTextureView.ASPECT_RATIO_PAVED_PARENT:
-                VMToast.make("Paved parent !").showDone();
-                break;
-            case PLVideoTextureView.ASPECT_RATIO_16_9:
-                VMToast.make("16 : 9 !").showDone();
-                break;
-            case PLVideoTextureView.ASPECT_RATIO_4_3:
-                VMToast.make("4 : 3 !").showDone();
-                break;
-            default:
-                break;
+        case PLVideoTextureView.ASPECT_RATIO_ORIGIN:
+            VMToast.make("Origin mode").showDone();
+            break;
+        case PLVideoTextureView.ASPECT_RATIO_FIT_PARENT:
+            VMToast.make("Fit parent !").showDone();
+            break;
+        case PLVideoTextureView.ASPECT_RATIO_PAVED_PARENT:
+            VMToast.make("Paved parent !").showDone();
+            break;
+        case PLVideoTextureView.ASPECT_RATIO_16_9:
+            VMToast.make("16 : 9 !").showDone();
+            break;
+        case PLVideoTextureView.ASPECT_RATIO_4_3:
+            VMToast.make("4 : 3 !").showDone();
+            break;
+        default:
+            break;
         }
     }
 
@@ -185,4 +234,18 @@ public class VideoPlayerFragment extends Fragment {
         super.onDestroy();
         mVideoPlayView.stopPlayback();
     }
+
+    private PLOnVideoFrameListener mOnVideoFrameListener = new PLOnVideoFrameListener() {
+        @Override
+        public void onVideoFrameAvailable(byte[] bytes, int size, int width, int height, int format, long ts) {
+            VMLog.i("onVideoFrameAvailable size: %d, w: %d, h: %d, f: %d", size, width, height, format);
+        }
+    };
+
+    private PLOnImageCapturedListener mImageCapturedListener = new PLOnImageCapturedListener() {
+        @Override
+        public void onImageCaptured(byte[] bytes) {
+            Log.i(TAG, "onImageCaptured bytes:" + bytes.length);
+        }
+    };
 }
