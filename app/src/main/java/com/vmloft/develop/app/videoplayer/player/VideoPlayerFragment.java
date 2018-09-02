@@ -135,7 +135,7 @@ public class VideoPlayerFragment extends Fragment {
         //// ASPECT_RATIO_4_3
         ////mDisplayAspectRatio = PLVideoTextureView.ASPECT_RATIO_16_9;
         ////mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
-        mController.initControllerListener(mVideoPlayView);
+        //mController.initControllerListener(mVideoPlayView);
         //mVideoPlayView.setOnVideoFrameListener(mOnVideoFrameListener);
         //mVideoPlayView.setOnImageCapturedListener(mImageCapturedListener);
         //// 设置视频播放控制器
@@ -165,20 +165,12 @@ public class VideoPlayerFragment extends Fragment {
         options.setInteger(AVOptions.KEY_AUDIO_DATA_CALLBACK, 0);
         mVideoPlayView.setAVOptions(options);
 
-        // Set some listeners
-        //mVideoPlayView.setOnInfoListener(mOnInfoListener);
-        //mVideoPlayView.setOnVideoSizeChangedListener(mOnVideoSizeChangedListener);
-        //mVideoPlayView.setOnBufferingUpdateListener(mOnBufferingUpdateListener);
-        //mVideoPlayView.setOnCompletionListener(mOnCompletionListener);
-        //mVideoPlayView.setOnErrorListener(mOnErrorListener);
-        //mVideoPlayView.setOnVideoFrameListener(mOnVideoFrameListener);
-        //mVideoPlayView.setOnAudioFrameListener(mOnAudioFrameListener);
-        //mVideoPlayView.setOnImageCapturedListener(mImageCapturedListener);
-
         mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
         mVideoPlayView.setLooping(false);
 
-        // You can also use a custom `MediaController` widget
+        mController.setActivity(mActivity);
+        mController.setTitle(videoDetailBean.getTitle());
+        mController.initControllerListener(mVideoPlayView);
         mVideoPlayView.setMediaController(mController);
         
         VImageLoader.loadImage(mActivity, mCoverView, videoDetailBean.getPic_url(), R.drawable.img_placeholder);
