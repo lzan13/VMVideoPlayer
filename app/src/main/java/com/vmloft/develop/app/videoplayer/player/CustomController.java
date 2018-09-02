@@ -801,7 +801,7 @@ public class CustomController extends FrameLayout implements IMediaController {
                 VMBitmap.saveBitmapToSDCard(bitmap, path);
                 String toastStr = "截图已保存在路径：" + path;
                 VMLog.i(toastStr);
-                Toast.makeText(mContext, toastStr, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(mContext, toastStr, Toast.LENGTH_SHORT).show();
             } catch (IOException e) {
                 e.printStackTrace();
             }

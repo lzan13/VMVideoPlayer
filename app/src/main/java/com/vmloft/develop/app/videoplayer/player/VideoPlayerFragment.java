@@ -121,42 +121,37 @@ public class VideoPlayerFragment extends Fragment {
         //// 设置视频播放控件配置项
         //mVideoPlayView.setAVOptions(options);
         //
-        //// 设置加载布局
-        //mVideoPlayView.setBufferingIndicator(mLoadingLayout);
-        //
-        //// 设置封面控件
-        //mVideoPlayView.setCoverView(mCoverView);
-        //
         //// 画面预览模式，包括：原始尺寸、适应屏幕、全屏铺满、16:9、4:3
         //// ASPECT_RATIO_ORIGIN
         //// ASPECT_RATIO_FIT_PARENT
         //// ASPECT_RATIO_PAVED_PARENT
         //// ASPECT_RATIO_16_9
         //// ASPECT_RATIO_4_3
-        ////mDisplayAspectRatio = PLVideoTextureView.ASPECT_RATIO_16_9;
-        ////mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
-        //mController.initControllerListener(mVideoPlayView);
-        //mVideoPlayView.setOnVideoFrameListener(mOnVideoFrameListener);
-        //mVideoPlayView.setOnImageCapturedListener(mImageCapturedListener);
+        //mDisplayAspectRatio = PLVideoTextureView.ASPECT_RATIO_16_9;
+        //mVideoPlayView.setDisplayAspectRatio(mDisplayAspectRatio);
+        //
+        //mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
+        //mVideoPlayView.setLooping(false);
+        //// 设置加载布局
+        //mVideoPlayView.setBufferingIndicator(mLoadingLayout);
+        //// 设置封面控件
+        //mVideoPlayView.setCoverView(mCoverView);
         //// 设置视频播放控制器
         //mController.setActivity(mActivity);
         //mController.setTitle(videoDetailBean.getTitle());
-        //mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
-        //mVideoPlayView.setLooping(false);
+        //mController.initControllerListener(mVideoPlayView);
         //mVideoPlayView.setMediaController(mController);
 
 
-        mVideoPlayView.setBufferingIndicator(mLoadingLayout);
-
-        mVideoPlayView.setCoverView(mCoverView);
 
         // 1 -> hw codec enable, 0 -> disable [recommended]
         AVOptions options = new AVOptions();
         // the unit of timeout is ms
         options.setInteger(AVOptions.KEY_PREPARE_TIMEOUT, 10 * 1000);
         // 1 -> hw codec enable, 0 -> disable [recommended]
-        int codec = AVOptions.MEDIA_CODEC_SW_DECODE;
+        int codec = AVOptions.MEDIA_CODEC_AUTO;
         options.setInteger(AVOptions.KEY_MEDIACODEC, codec);
+        options.setInteger(AVOptions.KEY_SEEK_MODE, 0);
         options.setInteger(AVOptions.KEY_LIVE_STREAMING, 0);
         boolean disableLog = false;
         //        options.setString(AVOptions.KEY_DNS_SERVER, "127.0.0.1");
@@ -168,11 +163,14 @@ public class VideoPlayerFragment extends Fragment {
         mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());
         mVideoPlayView.setLooping(false);
 
+        mVideoPlayView.setBufferingIndicator(mLoadingLayout);
+        mVideoPlayView.setCoverView(mCoverView);
+
         mController.setActivity(mActivity);
         mController.setTitle(videoDetailBean.getTitle());
         mController.initControllerListener(mVideoPlayView);
         mVideoPlayView.setMediaController(mController);
-        
+
         VImageLoader.loadImage(mActivity, mCoverView, videoDetailBean.getPic_url(), R.drawable.img_placeholder);
     }
 
@@ -227,17 +225,4 @@ public class VideoPlayerFragment extends Fragment {
         mVideoPlayView.stopPlayback();
     }
 
-    private PLOnVideoFrameListener mOnVideoFrameListener = new PLOnVideoFrameListener() {
-        @Override
-        public void onVideoFrameAvailable(byte[] bytes, int size, int width, int height, int format, long ts) {
-            VMLog.i("onVideoFrameAvailable size: %d, w: %d, h: %d, f: %d", size, width, height, format);
-        }
-    };
-
-    private PLOnImageCapturedListener mImageCapturedListener = new PLOnImageCapturedListener() {
-        @Override
-        public void onImageCaptured(byte[] bytes) {
-            Log.i(TAG, "onImageCaptured bytes:" + bytes.length);
-        }
-    };
 }
