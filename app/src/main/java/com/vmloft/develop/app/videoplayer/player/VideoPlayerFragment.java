@@ -43,7 +43,7 @@ public class VideoPlayerFragment extends Fragment {
     private static final String TAG = "VideoPlayerFragment";
     private VMActivity mActivity;
 
-    @BindView(R.id.view_video_player) PLVideoView mVideoPlayView;
+    @BindView(R.id.view_video_player) PLVideoTextureView mVideoPlayView;
     @BindView(R.id.layout_loading) LinearLayout mLoadingLayout;
     @BindView(R.id.text_load) TextView mLoadView;
     @BindView(R.id.img_cover) ImageView mCoverView;
@@ -156,8 +156,6 @@ public class VideoPlayerFragment extends Fragment {
         boolean disableLog = false;
         //        options.setString(AVOptions.KEY_DNS_SERVER, "127.0.0.1");
         options.setInteger(AVOptions.KEY_LOG_LEVEL, disableLog ? 5 : 0);
-        options.setInteger(AVOptions.KEY_VIDEO_DATA_CALLBACK, 1);
-        options.setInteger(AVOptions.KEY_AUDIO_DATA_CALLBACK, 0);
         mVideoPlayView.setAVOptions(options);
 
         mVideoPlayView.setVideoPath(videoDetailBean.getFile_url());

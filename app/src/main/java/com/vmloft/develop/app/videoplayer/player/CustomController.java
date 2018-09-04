@@ -34,6 +34,7 @@ import com.pili.pldroid.player.PLOnInfoListener;
 import com.pili.pldroid.player.PLOnPreparedListener;
 import com.pili.pldroid.player.PLOnVideoFrameListener;
 import com.pili.pldroid.player.PLOnVideoSizeChangedListener;
+import com.pili.pldroid.player.widget.PLVideoTextureView;
 import com.pili.pldroid.player.widget.PLVideoView;
 import com.vmloft.develop.app.videoplayer.R;
 import com.vmloft.develop.app.videoplayer.common.VApp;
@@ -85,12 +86,14 @@ public class CustomController extends FrameLayout implements IMediaController {
     @BindView(R.id.layout_seek_tip) RelativeLayout mSeekTipLayout;
     @BindView(R.id.text_seek_tip) TextView mSeekTipView;
 
+    @BindView(R.id.img_show_screenshot)ImageView mShowScreenshotView;
+
     private VMActivity mActivity;
     private Context mContext;
 
     // 视频播放控制接口
     private MediaPlayerControl mPlayerControl;
-    private PLVideoView mVideoPlayView;
+    private PLVideoTextureView mVideoPlayView;
 
     // 音频管理类
     private AudioManager mAudioManager;
@@ -165,7 +168,7 @@ public class CustomController extends FrameLayout implements IMediaController {
     /**
      * 初始化视频播放的一些监听，因为要设置给播放控件，所以这里传进来
      */
-    public void initControllerListener(PLVideoView videoView) {
+    public void initControllerListener(PLVideoTextureView videoView) {
         mVideoPlayView = videoView;
         mVideoPlayView.setOnPreparedListener(mOnPreparedListener);
         mVideoPlayView.setOnInfoListener(mOnInfoListener);
@@ -252,7 +255,9 @@ public class CustomController extends FrameLayout implements IMediaController {
     }
 
     private void onScreenshot() {
-        mVideoPlayView.captureImage(3000);
+//        mVideoPlayView.captureImage(3000);
+        Bitmap bitmap = mVideoPlayView.getTextureView().getBitmap();
+        mShowScreenshotView.setImageBitmap(bitmap);
     }
 
     /**

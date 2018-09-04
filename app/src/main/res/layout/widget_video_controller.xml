@@ -203,4 +203,13 @@
             style="@style/VMText.Subhead"
             />
     </RelativeLayout>
+    <!--测试展示截图 view-->
+    <ImageView
+        android:id="@+id/img_show_screenshot"
+        android:layout_width="@dimen/vm_dimen_128"
+        android:layout_height="@dimen/vm_dimen_72"
+        android:src="@mipmap/ic_launcher_round"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
 </android.support.constraint.ConstraintLayout>
