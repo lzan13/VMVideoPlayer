@@ -27,10 +27,13 @@
             android:configChanges="orientation|keyboardHidden|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!--模拟登陆界面播放视频-->
+        <activity
+            android:name=".login.LoginActivity"
+            android:screenOrientation="portrait" />
         <!--视频播放界面-->
         <activity
             android:name=".player.VideoPlayerActivity"

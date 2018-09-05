@@ -12,6 +12,7 @@ import com.vmloft.develop.app.videoplayer.R;
 import com.vmloft.develop.app.videoplayer.bean.VideoSimpleBean;
 import com.vmloft.develop.app.videoplayer.common.VCallback;
 import com.vmloft.develop.app.videoplayer.common.VConstant;
+import com.vmloft.develop.app.videoplayer.login.LoginActivity;
 import com.vmloft.develop.app.videoplayer.network.NetHelper;
 import com.vmloft.develop.app.videoplayer.player.VideoPlayerActivity;
 import com.vmloft.develop.library.tools.VMActivity;
@@ -109,12 +110,19 @@ public class MainActivity extends VMActivity {
 
     /**
      * 去播放
-     *
-     * @param videoId
      */
     private void startPlayer(String videoId) {
         Intent intent = new Intent(activity, VideoPlayerActivity.class);
         intent.putExtra(VConstant.KEY_VIDEO_ID, videoId);
         startActivity(intent);
+    }
+
+    @OnClick({R.id.btn_login})
+    public void onClick(View view) {
+        switch (view.getId()) {
+            case R.id.btn_login:
+                startActivity(new Intent(activity, LoginActivity.class));
+                break;
+        }
     }
 }
